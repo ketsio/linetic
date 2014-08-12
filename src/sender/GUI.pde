@@ -12,6 +12,11 @@ class GUI {
   // Move Grid
   int col;
   int row;
+  PVector gridOrigin;
+  int gridWidth;
+  int gridHeight;
+  int cellWidth;
+  int cellHeight;
 
   // Fonts
   PFont fontA32;
@@ -40,6 +45,13 @@ class GUI {
     col = row*col - nbrOfMoves >= row ? ceil(float(nbrOfMoves) / float(row)) : col;
     println("col = " + col + ", row = " + row);
 
+    gridOrigin = new PVector(0, context.depthHeight() + padding);
+    gridWidth = width;
+    gridHeight = int(height - gridOrigin.y);
+
+    cellWidth = (gridWidth - padding * (col + 1)) / col;
+    cellHeight = (gridHeight - padding * (row + 1)) / row;
+
     // FONTS ================================================
     fontA32 = createFont("Arial", 32);
     fontA12 = createFont("Arial", 16);
@@ -55,7 +67,7 @@ class GUI {
     strokeWeight(3);
     smooth();
 
-    size(1300, 650, JAVA2D);
+    size(1200, 600, JAVA2D);
     //println("w = " + context.depthWidth() + ", h = " + context.depthHeight());
     pg = createGraphics(context.depthWidth(), context.depthHeight());
     //pg = createGraphics(context.depthWidth(), context.depthHeight(), P2D);
@@ -92,17 +104,9 @@ class GUI {
     //ringbuffer[0].display();
 
     // process the skeleton if it's available
-    foundSkeleton = false;
-    person = 0;
-
     for (User u : users.values ())
-    {
-      if (context.isTrackingSkeleton(u.id) && person++ < nbrOfPerson)
-      {
+      if (context.isTrackingSkeleton(u.id))
         evaluateSkeleton(u.id);
-        foundSkeleton = true;
-      }
-    }
 
     pg.endDraw();
 
@@ -129,7 +133,7 @@ class GUI {
       popMatrix();
     }
 
-    if (!foundSkeleton) 
+    if (users.isEmpty()) 
     {
       stroke(0, 0, 0);
       fill(0, 0, 0);
@@ -156,93 +160,8 @@ class GUI {
       }
     }
 
-    if (updateDisplay)
-    {
-      updateDisplay = false;
-
-      PVector gridOrigin = new PVector(0, context.depthHeight() + padding);
-      int gridWidth = width;
-      int gridHeight = int(height - gridOrigin.y);
-
-      textFont(fontA12, 16);
-      textAlign(CENTER);
-      rectMode(CORNER);
-      fill(255);
-
-      int cellWidth = (gridWidth - padding * (col + 1)) / col;
-      int cellHeight = (gridHeight - padding * (row + 1)) / row;
-      println("cellWidth = " + cellWidth + ", cellHeight = " + cellHeight);
-
-      // Displaying the grid of moves (TODO : optimize offset calcul (more vars))
-      int moveId;
-      PVector cellOrigin = new PVector();
-      for (int r = 0; r < row; r++)
-        for (int c = 0; c < col; c++) {
-          moveId = r * col + c;
-          if (moveId < nbrOfMoves) {
-            Move move = moves[moveId];
-
-            cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
-            cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
-            if (move.empty) {
-              image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
-            }
-            else if (move.image ==  null) {
-              image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight); // TODO : create a 'noImage' png
-            }
-            else if (mirrored) {
-              pushMatrix();
-              scale(-1.0, 1.0);
-              image(move.image, - (cellOrigin.x + cellWidth), cellOrigin.y, cellWidth, cellHeight);
-              popMatrix();
-            }
-            else {
-              image(move.image, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
-            }
-            text(moveId, cellOrigin.x + 12, cellOrigin.y + 16);
-          }
-        }
-    }
-
-    // evaluate and draw DTW
-    if (foundSkeleton)
-    {
-
-      noStroke();             
-      fill(0, 0, 0);
-
-      for (User user : users.values ()) {
-        for (int i = 0; i < nbrOfMoves; i++)
-        {
-          Move move = moves[i];
-          if (!move.empty)
-          {
-            user.rb.costLast[i] = user.rb.cost[i];
-            user.rb.cost[i] = user.rb.pathcost(i);
-            user.rb.cost[i] = (log(user.rb.cost[i]-1.0) - 5.5)/2.0;
-
-            float matching = 10.0 * (user.rb.cost[i] - 0.25);
-
-            fill(user.c);
-            if ( user.rb.cost[i] <= 0.25 )
-              fill(0, 255, 0);
-
-            if (user.rb.cost[i] > 0.25 && user.rb.cost[i] < 0.35)
-              fill(user.c, 200);
-
-            // Positioning
-            if (i < 5) rect(i * (context.depthWidth() + 400) / 5 + i*5, context.depthHeight() + 145 + 10*user.id, min(1.0, max(0.01, 1.0-user.rb.cost[i])) * ((context.depthWidth() + 400) / 5), 10);
-            if (i >= 5) rect((i-5) * (context.depthWidth() + 400) / 5 + (i-5)*5, context.depthHeight() + 300 + 10*user.id, min(1.0, max(0.01, 1.0-user.rb.cost[i])) * ((context.depthWidth() + 400) / 5), 10);
-
-            if (user.rb.cost[i] < 0.3 && user.rb.costLast[i] >= 0.3)
-            {
-              println("found gesture #" + i + " user : " + user.name);
-              server.send(move, user);
-            }
-          }
-        }
-      }
-    }
+    // Grid of Moves
+    displayGrid();
   }
 
   public void update() {
@@ -274,6 +193,107 @@ class GUI {
   /************************************
    **** PRIVATE AUXILIARY FONCTIONS ****
    ************************************/
+
+  private void displayGrid() {
+
+    if (updateDisplay) {
+      updateDisplay = false;
+
+      textFont(fontA12, 16);
+      textAlign(CENTER);
+      rectMode(CORNER);
+      fill(255);
+
+      println("cellWidth = " + cellWidth + ", cellHeight = " + cellHeight);
+
+      // Displaying the grid of moves (TODO : optimize offset calcul (more vars))
+      int moveId;
+      PVector cellOrigin = new PVector();
+      for (int r = 0; r < row; r++)
+        for (int c = 0; c < col; c++) {
+          moveId = r * col + c;
+          if (moveId < nbrOfMoves) {
+            cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
+            cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
+            drawCell(cellOrigin, moveId);
+          }
+        }
+    }
+
+    // evaluate and draw DTW
+    if (highlightedUser != null) {
+
+      noStroke();             
+      fill(0, 0, 0);
+
+      for (int i = 0; i < nbrOfMoves; i++)
+        drawMatchingBar(highlightedUser, i);
+    }
+    //    if (!users.isEmpty())
+    //    {
+    //
+    //      noStroke();             
+    //      fill(0, 0, 0);
+    //
+    //      for (User user : users.values ()) 
+    //        for (int i = 0; i < nbrOfMoves; i++)
+    //          drawMatchingBar(user, i);
+    //    }
+  }
+
+  private void drawCell(PVector cellOrigin, int moveId) {
+    Move move = moves[moveId];
+
+    if (move.empty) {
+      image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
+    } else if (move.image ==  null) {
+      image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight); // TODO : create a 'noImage' png
+    } else if (mirrored) {
+      pushMatrix();
+      scale(-1.0, 1.0);
+      image(move.image, - (cellOrigin.x + cellWidth), cellOrigin.y, cellWidth, cellHeight);
+      popMatrix();
+    } else {
+      image(move.image, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
+    }
+    text(moveId, cellOrigin.x + 12, cellOrigin.y + 16);
+  }
+
+  private void drawMatchingBar(User user, int moveId) {
+
+    Move move = moves[moveId];
+    if (!move.empty)
+    {
+      user.rb.costLast[moveId] = user.rb.cost[moveId];
+      user.rb.cost[moveId] = user.rb.pathcost(moveId);
+      user.rb.cost[moveId] = (log(user.rb.cost[moveId]-1.0) - 5.5)/2.0;
+
+      float matching = 100.0 * (1 - user.rb.cost[moveId]);
+
+      fill(user.c);
+      if ( user.rb.cost[moveId] <= 0.25 )
+        fill(0, 255, 0);
+
+      if (user.rb.cost[moveId] > 0.25 && user.rb.cost[moveId] < 0.35)
+        fill(user.c, 200);
+
+      // Positioning
+      int c = moveId / col;
+      int r = moveId % col;
+      PVector cellOrigin = new PVector();
+      cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
+      cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
+
+      rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, 1.0-user.rb.cost[moveId])) * cellWidth, 10);
+
+      if (user.rb.cost[moveId] < 0.3 && user.rb.costLast[moveId] >= 0.3)
+      {
+        println("found gesture #" + moveId + " user : " + user.name);
+        server.send(move, user);
+      }
+    }
+  }
+
   private void loadImages() {
 
     warnings = new PImage[2][8];

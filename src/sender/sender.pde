@@ -54,19 +54,15 @@ int framesInputMax = 2*framesGestureMax;
 int counter = 0;
 int counterEvent = 0;
 
-int person = 0;
-boolean foundSkeleton = false;
-
 // Relative Array of objects
 Pose[][] grid;
 Move[] moves;
 Map<Integer, User> users;
-
+User highlightedUser = null;
 
 
 int steps[];
 float speed[];
-boolean empty[];
 PGraphics pg;
 int warning[];
 
@@ -84,17 +80,16 @@ GUI gui;
 void setup()
 {
   // Instanciations
-  users = new HashMap<Integer,User>();
+  users = new HashMap<Integer, User>();
   data = new Data();
   server = new Server();
 
   // Arrays instanciations
   steps = new int[nbrOfMoves];
   speed = new float[nbrOfMoves];
-  empty = new boolean[nbrOfMoves];
   warning = new int[nbrOfPerson];
   moves = new Move[nbrOfMoves];
-  
+
   for (int i = 0; i < nbrOfMoves; i++)
     moves[i] = new Move();
 
@@ -123,7 +118,7 @@ void setup()
     f = new File(dataPath("pose" + str + ".data"));      
     if (!f.exists()) {
       println("File " + dataPath("pose" + str + ".data") + " does not exist");
-      for (User user : users.values())
+      for (User user : users.values ())
         user.rb.cost[i] = 10000.0;
     } else { 
       data.loadMove(i);
@@ -164,16 +159,31 @@ void evaluateSkeleton(int userId)
 
 void onNewUser(SimpleOpenNI kinect, int userId)
 {
+  if (users.size() > nbrOfPerson) {
+    println(">> Error : Maximum number of person reached : " + nbrOfPerson);
+    return;
+  }
+    
   User user = new User(userId);
+  if (users.isEmpty())
+    highlightedUser = user;
+    
   users.put(userId, user);
   println("onNewUser - userId: " + userId);
   user.hello();
+
+
   kinect.startTrackingSkeleton(userId);
 }
 
 void onLostUser(SimpleOpenNI kinect, int userId)
 {
   users.remove(userId);
+  if (users.isEmpty())
+    highlightedUser = null;
+  else if (highlightedUser.id == userId)
+    highlightedUser = getRandomUser();
+    
   println("onLostUser - userId: " + userId);
   //  if (!autoPoseDetection)
   //    context.stopTrackingSkeleton(userId);
@@ -199,17 +209,13 @@ void onLostHand(SimpleOpenNI curContext, int handId) {
 
 void keyPressed()
 {  
-  if ( (key >= '0') && (key <= '9') && (foundSkeleton) )
+  if ( (key >= '0') && (key <= '9') && (highlightedUser != null) )
   {
     int keyIndex = key-'0';
 
-    int[] userList = context.getUsers();
-    if (userList.length < 1)
-      return;
-
     println("POSE " + keyIndex + " SAVED");
     Move move = moves[keyIndex];
-    users.get(userList[0]).saveMyMove(move); // TODO : Choose manualy
+    highlightedUser.saveMyMove(move);
 
     String str = Integer.toString(keyIndex);
     pg.save(dataPath("pose" + str + ".png")); 

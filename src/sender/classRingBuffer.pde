@@ -239,11 +239,6 @@ class RingBuffer
     fill(255, 255, 255);
     text("analyse", context.depthWidth() + 100, 35);
     text("figure #" + gui.displayCost, context.depthWidth() + 100, 75);
-
-    // find user to analyse
-    if (users.values().isEmpty()) return;
-    List<User> currentUsers = new ArrayList<User>(users.values());
-    User user = currentUsers.get(0); // TODO : manualy again ?
     
     // find best match
     if (cost.length < 1) return;

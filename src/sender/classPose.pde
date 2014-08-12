@@ -12,29 +12,13 @@ class Pose
   }
 
   public void copyFrom(Pose that) {
-    jointLeftShoulderRelative.x = that.jointLeftShoulderRelative.x;
-    jointLeftShoulderRelative.y = that.jointLeftShoulderRelative.y;
-    jointLeftShoulderRelative.z = that.jointLeftShoulderRelative.z;
+    jointLeftShoulderRelative = that.jointLeftShoulderRelative.get();
+    jointLeftElbowRelative = that.jointLeftElbowRelative.get();
+    jointLeftHandRelative = that.jointLeftHandRelative.get();
 
-    jointLeftElbowRelative.x = that.jointLeftElbowRelative.x;
-    jointLeftElbowRelative.y = that.jointLeftElbowRelative.y;
-    jointLeftElbowRelative.z = that.jointLeftElbowRelative.z;
-
-    jointLeftHandRelative.x = that.jointLeftHandRelative.x;
-    jointLeftHandRelative.y = that.jointLeftHandRelative.y;
-    jointLeftHandRelative.z = that.jointLeftHandRelative.z;
-
-    jointRightShoulderRelative.x = that.jointRightShoulderRelative.x;
-    jointRightShoulderRelative.y = that.jointRightShoulderRelative.y;
-    jointRightShoulderRelative.z = that.jointRightShoulderRelative.z;
-
-    jointRightElbowRelative.x = that.jointRightElbowRelative.x;
-    jointRightElbowRelative.y = that.jointRightElbowRelative.y;
-    jointRightElbowRelative.z = that.jointRightElbowRelative.z;        
-
-    jointRightHandRelative.x = that.jointRightHandRelative.x;
-    jointRightHandRelative.y = that.jointRightHandRelative.y;
-    jointRightHandRelative.z = that.jointRightHandRelative.z;
+    jointRightShoulderRelative = that.jointRightShoulderRelative.get();
+    jointRightElbowRelative = that.jointRightElbowRelative.get();   
+    jointRightHandRelative = that.jointRightHandRelative.get();
   }
 
   public Pose capture(SimpleOpenNI kinect, int userId) {
@@ -75,34 +59,17 @@ class Pose
     kinect.convertRealWorldToProjective(jointRightHand3D, jointRightHand2D);
 
     // calculate relative position  
-    pose.jointLeftShoulderRelative.x = jointLeftShoulder3D.x - jointNeck3D.x;
-    pose.jointLeftShoulderRelative.y = jointLeftShoulder3D.y - jointNeck3D.y;
-    pose.jointLeftShoulderRelative.z = jointLeftShoulder3D.z - jointNeck3D.z;
-
-    pose.jointLeftElbowRelative.x = jointLeftElbow3D.x - jointNeck3D.x;
-    pose.jointLeftElbowRelative.y = jointLeftElbow3D.y - jointNeck3D.y;
-    pose.jointLeftElbowRelative.z = jointLeftElbow3D.z - jointNeck3D.z;
-
-    pose.jointLeftHandRelative.x = jointLeftHand3D.x - jointNeck3D.x;
-    pose.jointLeftHandRelative.y = jointLeftHand3D.y - jointNeck3D.y;
-    pose.jointLeftHandRelative.z = jointLeftHand3D.z - jointNeck3D.z;
-
-    pose.jointRightShoulderRelative.x = jointRightShoulder3D.x - jointNeck3D.x;
-    pose.jointRightShoulderRelative.y = jointRightShoulder3D.y - jointNeck3D.y;
-    pose.jointRightShoulderRelative.z = jointRightShoulder3D.z - jointNeck3D.z;
-
-    pose.jointRightElbowRelative.x = jointRightElbow3D.x - jointNeck3D.x;
-    pose.jointRightElbowRelative.y = jointRightElbow3D.y - jointNeck3D.y;
-    pose.jointRightElbowRelative.z = jointRightElbow3D.z - jointNeck3D.z;
-
-    pose.jointRightHandRelative.x = jointRightHand3D.x - jointNeck3D.x;
-    pose.jointRightHandRelative.y = jointRightHand3D.y - jointNeck3D.y;
-    pose.jointRightHandRelative.z = jointRightHand3D.z - jointNeck3D.z;
+    pose.jointLeftShoulderRelative = PVector.sub(jointLeftShoulder3D, jointNeck3D);
+    pose.jointLeftElbowRelative = PVector.sub(jointLeftElbow3D, jointNeck3D);
+    pose.jointLeftHandRelative = PVector.sub(jointLeftHand3D, jointNeck3D);
+    pose.jointRightShoulderRelative = PVector.sub(jointRightShoulder3D, jointNeck3D);
+    pose.jointRightElbowRelative = PVector.sub(jointRightElbow3D, jointNeck3D);
+    pose.jointRightHandRelative = PVector.sub(jointRightHand3D, jointNeck3D);
 
     // Drawing
-    if (userId == 0) pg.stroke(255, 0, 0);
-    if (userId == 1) pg.stroke(0, 0, 255);
+    pg.stroke(users.get(userId).c);
     pg.strokeWeight(5);
+    
     pg.line(jointNeck2D.x, jointNeck2D.y, jointLeftShoulder2D.x, jointLeftShoulder2D.y);
     pg.line(jointLeftShoulder2D.x, jointLeftShoulder2D.y, jointLeftElbow2D.x, jointLeftElbow2D.y);
     pg.line(jointLeftElbow2D.x, jointLeftElbow2D.y, jointLeftHand2D.x, jointLeftHand2D.y);  
