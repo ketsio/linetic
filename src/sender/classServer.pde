@@ -18,11 +18,12 @@ class Server {
     oscP5.send(m, netAddressList);
   }
   
-  public void send(Move move, int userId) {
+  public void send(Move move, User user) {
     OscMessage m = new OscMessage("/move");
     // sending the move slug ?
     // m.add(move.slug);
-    // m.add(userId);
+    // m.add(user.name);
+    // m.add(user.c);
     oscP5.send(m, netAddressList);
   }
 

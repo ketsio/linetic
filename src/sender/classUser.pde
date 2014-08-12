@@ -22,7 +22,7 @@ class User {
     rb.fillBuffer(pose);
     rb.fillBufferNormalized(pose.normalizeRotation());
   }
-  
+
   void saveMyMove(Move move) {
     this.rb.copyBuffer(move);
   }

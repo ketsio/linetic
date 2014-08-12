@@ -42,6 +42,7 @@ import SimpleOpenNI.*;
 import oscP5.*;
 import netP5.*;
 import java.util.Map;
+import java.util.List;
 // import processing.opengl.*;
 
 
@@ -65,8 +66,6 @@ Map<Integer, User> users;
 
 int steps[];
 float speed[];
-float cost[][];
-float costLast[][];
 boolean empty[];
 PGraphics pg;
 int warning[];
@@ -92,8 +91,6 @@ void setup()
   // Arrays instanciations
   steps = new int[nbrOfMoves];
   speed = new float[nbrOfMoves];
-  cost = new float[nbrOfPerson][nbrOfMoves];
-  costLast = new float[nbrOfPerson][nbrOfMoves];
   empty = new boolean[nbrOfMoves];
   warning = new int[nbrOfPerson];
   moves = new Move[nbrOfMoves];
@@ -126,8 +123,8 @@ void setup()
     f = new File(dataPath("pose" + str + ".data"));      
     if (!f.exists()) {
       println("File " + dataPath("pose" + str + ".data") + " does not exist");
-      for (int p = 0; p < nbrOfPerson; p++)
-        cost[p][i] = 10000.0;
+      for (User user : users.values())
+        user.rb.cost[i] = 10000.0;
     } else { 
       data.loadMove(i);
     }
@@ -211,13 +208,14 @@ void keyPressed()
       return;
 
     println("POSE " + keyIndex + " SAVED");
-    users.get(userList[0]).saveMyMove(moves[keyIndex]);
+    Move move = moves[keyIndex];
+    users.get(userList[0]).saveMyMove(move); // TODO : Choose manualy
 
     String str = Integer.toString(keyIndex);
     pg.save(dataPath("pose" + str + ".png")); 
     data.saveMove(keyIndex);
-    gui.foto[keyIndex] = loadImage(dataPath("pose" + str + ".png"));
-    empty[keyIndex] = false;
+    move.image = loadImage(dataPath("pose" + str + ".png"));
+    move.empty = false;
     gui.update();
   }
 

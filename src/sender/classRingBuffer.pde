@@ -3,14 +3,21 @@ class RingBuffer
   Pose[] poseArray;
   Pose[] poseNormalizedArray;
   int startOfBuffer = 0;
+  
   Float d[][][] = new Float[nbrOfMoves][framesGestureMax][framesInputMax];
   int P[][][] = new int[nbrOfMoves][framesGestureMax][framesInputMax];
   Float D[][] = new Float[framesGestureMax][framesInputMax];
+  
+  float cost[];
+  float costLast[];
 
   // constructor
   RingBuffer () {
     poseArray = new Pose[framesInputMax];
     poseNormalizedArray = new Pose[framesInputMax];
+    
+    cost = new float[nbrOfMoves];
+    costLast = new float[nbrOfMoves];
 
     for (int m = 0; m < framesInputMax; m++) 
     {
@@ -233,19 +240,25 @@ class RingBuffer
     text("analyse", context.depthWidth() + 100, 35);
     text("figure #" + gui.displayCost, context.depthWidth() + 100, 75);
 
+    // find user to analyse
+    if (users.values().isEmpty()) return;
+    List<User> currentUsers = new ArrayList<User>(users.values());
+    User user = currentUsers.get(0); // TODO : manualy again ?
+    
     // find best match
-    float bestcost = cost[0][0];
-    int whichcost = 0;        
+    if (cost.length < 1) return;
+    float bestcost = cost[0];
+    int whichcost = 0;
     for (int i = 0; i < nbrOfMoves; i++)
     {
-      if ( (cost[0][i] < bestcost) && (!empty[i]) )
+      if (!moves[i].empty && cost[i] < bestcost)
       {
-        bestcost = cost[0][i];
+        bestcost = cost[i];
         whichcost = i;
       }
     }
 
-    if ( ( cost[0][whichcost] < 0.3 ) && ( costLast[0][whichcost] >= 0.3 ) )
+    if (cost[whichcost] < 0.3 && costLast[whichcost] >= 0.3)
     {
       fill(0, 0, 0);
       rect(context.depthWidth() + 200, 0, 200, 90);
@@ -273,7 +286,7 @@ class RingBuffer
       counterEvent--;
     }
 
-    if ( ( costLast[0][whichcost] < 0.3 ) && ( costLast[0][whichcost] > cost[0][whichcost] ) )
+    if (costLast[whichcost] < 0.3 && costLast[whichcost] > cost[whichcost])
     {
       fill(0, 0, 0);
       rect(context.depthWidth() + 200, 80, 200, 200);

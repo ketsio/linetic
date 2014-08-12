@@ -1,14 +1,19 @@
 class Move {
   
   private Pose[] poses = new Pose[framesGestureMax];
+  public boolean empty = true;
+  public PImage image = null;
+  public String name = null;
+  public String slug = null;
   
-  // settings :
+  // settings
   public float weightX = defaultWeightX;
   public float weightY = defaultWeightY;
   public float weightZ = defaultWeightZ;
   public float weightLeftOrRight = defaultWeightLeftOrRight;
   public boolean normRotation = defaultNormRotation;
   public int framesGesture = defaultFramesGesture;
+  
   
   public Move() {
     for (int i = 0; i < framesGestureMax; i++) poses[i] = new Pose();

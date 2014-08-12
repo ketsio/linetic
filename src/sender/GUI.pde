@@ -18,7 +18,6 @@ class GUI {
   PFont fontA12;
 
   // Images
-  PImage[] foto;
   PImage emptyImage;
   PImage[][] warnings;
   PImage shapeOfUser;  
@@ -71,10 +70,10 @@ class GUI {
     }
 
     // DISPLAY LOGO =========================================
-//    pushMatrix();
-//    rotate(-PI/2);
-//    image(logo, -780, 1180);
-//    popMatrix();
+    //    pushMatrix();
+    //    rotate(-PI/2);
+    //    image(logo, -780, 1180);
+    //    popMatrix();
   }
 
 
@@ -96,13 +95,12 @@ class GUI {
     foundSkeleton = false;
     person = 0;
 
-    for (int i = 1; i < 6; i++)
+    for (User u : users.values ())
     {
-      if (context.isTrackingSkeleton(i) && person < nbrOfPerson)
+      if (context.isTrackingSkeleton(u.id) && person++ < nbrOfPerson)
       {
-        evaluateSkeleton(i);
+        evaluateSkeleton(u.id);
         foundSkeleton = true;
-        person++;
       }
     }
 
@@ -165,7 +163,7 @@ class GUI {
       PVector gridOrigin = new PVector(0, context.depthHeight() + padding);
       int gridWidth = width;
       int gridHeight = int(height - gridOrigin.y);
-      
+
       textFont(fontA12, 16);
       textAlign(CENTER);
       rectMode(CORNER);
@@ -182,18 +180,24 @@ class GUI {
         for (int c = 0; c < col; c++) {
           moveId = r * col + c;
           if (moveId < nbrOfMoves) {
+            Move move = moves[moveId];
+
             cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
             cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
-            if (empty[moveId]) {
+            if (move.empty) {
               image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
+            }
+            else if (move.image ==  null) {
+              image(emptyImage, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight); // TODO : create a 'noImage' png
             }
             else if (mirrored) {
               pushMatrix();
               scale(-1.0, 1.0);
-              image(foto[moveId], - (cellOrigin.x + cellWidth), cellOrigin.y, cellWidth, cellHeight);
+              image(move.image, - (cellOrigin.x + cellWidth), cellOrigin.y, cellWidth, cellHeight);
               popMatrix();
-            } else {
-              image(foto[moveId], cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
+            }
+            else {
+              image(move.image, cellOrigin.x, cellOrigin.y, cellWidth, cellHeight);
             }
             text(moveId, cellOrigin.x + 12, cellOrigin.y + 16);
           }
@@ -206,40 +210,34 @@ class GUI {
 
       noStroke();             
       fill(0, 0, 0);
-      rect(0, context.depthHeight() + 145, 1070, 20);
-      rect(0, context.depthHeight() + 300, 1070, 20);
 
-      for (int p = 0; p < person; p++) {
+      for (User user : users.values ()) {
         for (int i = 0; i < nbrOfMoves; i++)
         {
-          if (!empty[i])
+          Move move = moves[i];
+          if (!move.empty)
           {
-            costLast[p][i] = cost[p][i];
-            cost[p][i] = users.get(p).rb.pathcost(i);
-            cost[p][i] = (log(cost[p][i]-1.0) - 5.5)/2.0;
-            // println("cost(" + i + "): " + cost);
+            user.rb.costLast[i] = user.rb.cost[i];
+            user.rb.cost[i] = user.rb.pathcost(i);
+            user.rb.cost[i] = (log(user.rb.cost[i]-1.0) - 5.5)/2.0;
 
-            fill(255, 0, 0);
-            if (p == 1) fill(0, 0, 255);
-            if ( cost[p][i] <= 0.25 )
-            {
+            float matching = 10.0 * (user.rb.cost[i] - 0.25);
+
+            fill(user.c);
+            if ( user.rb.cost[i] <= 0.25 )
               fill(0, 255, 0);
-            }
 
-            if ( ( cost[p][i] > 0.25 ) && ( cost[p][i] < 0.35 ) )
+            if (user.rb.cost[i] > 0.25 && user.rb.cost[i] < 0.35)
+              fill(user.c, 200);
+
+            // Positioning
+            if (i < 5) rect(i * (context.depthWidth() + 400) / 5 + i*5, context.depthHeight() + 145 + 10*user.id, min(1.0, max(0.01, 1.0-user.rb.cost[i])) * ((context.depthWidth() + 400) / 5), 10);
+            if (i >= 5) rect((i-5) * (context.depthWidth() + 400) / 5 + (i-5)*5, context.depthHeight() + 300 + 10*user.id, min(1.0, max(0.01, 1.0-user.rb.cost[i])) * ((context.depthWidth() + 400) / 5), 10);
+
+            if (user.rb.cost[i] < 0.3 && user.rb.costLast[i] >= 0.3)
             {
-              float normalized = 10.0 * (cost[p][i] - 0.25);
-              fill(255 * normalized, 255 * (1.0-normalized), 0);
-              if (p == 1) fill(0, 255 * (1.0-normalized), 255 * normalized);
-            }
-
-            if (i < 5) rect(i * (context.depthWidth() + 400) / 5 + i*5, context.depthHeight() + 145 + 10*p, min(1.0, max(0.01, 1.0-cost[p][i])) * ((context.depthWidth() + 400) / 5), 10);
-            if (i >= 5) rect((i-5) * (context.depthWidth() + 400) / 5 + (i-5)*5, context.depthHeight() + 300 + 10*p, min(1.0, max(0.01, 1.0-cost[p][i])) * ((context.depthWidth() + 400) / 5), 10);
-
-            if ( ( cost[p][i] < 0.3 ) && ( costLast[p][i] >= 0.3 ) )
-            {
-              println("found gesture #" + i + " user #" + p);
-              server.send(moves[i], p);
+              println("found gesture #" + i + " user : " + user.name);
+              server.send(move, user);
             }
           }
         }
@@ -300,16 +298,15 @@ class GUI {
     logo = loadImage(dataPath("kinetic_space.png"));
     emptyImage = loadImage(dataPath("empty.png"));
 
-    foto = new PImage[nbrOfMoves];
     for (int i = 0; i < nbrOfMoves; i++) {
-      String str = Integer.toString(i);          
-      empty[i] = false;
+      String str = Integer.toString(i);
+      Move move = moves[i];
 
       File f = new File(dataPath("pose" + str + ".png"));
       if (!f.exists()) 
-        empty[i] = true;
+        move.empty = true;
       else
-        foto[i] = loadImage(dataPath("pose" + str + ".png"));
+        move.image = loadImage(dataPath("pose" + str + ".png"));
     }
   }
 }
