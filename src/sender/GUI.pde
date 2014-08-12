@@ -55,7 +55,7 @@ class GUI {
     strokeWeight(3);
     smooth();
 
-    size(1200, 600, JAVA2D);
+    size(1300, 650, JAVA2D);
     //println("w = " + context.depthWidth() + ", h = " + context.depthHeight());
     pg = createGraphics(context.depthWidth(), context.depthHeight());
     //pg = createGraphics(context.depthWidth(), context.depthHeight(), P2D);
