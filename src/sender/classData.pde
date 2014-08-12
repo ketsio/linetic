@@ -132,6 +132,7 @@ class Data {
       if (NORMALIZE_SIZE) pose.normalizeSize();
       if (move.normRotation) pose = pose.normalizeRotation();
     }
+    move.empty = false;
   }
 }
 

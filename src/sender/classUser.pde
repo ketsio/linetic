@@ -11,7 +11,7 @@ class User {
     };
     this.name = dwarfs[int(random(dwarfs.length))];
     this.rb = new RingBuffer();
-    this.c = color(random(255), random(255), random(255));
+    this.c = color(random(50, 255), random(255), random(255));
   }
 
   void hello() {

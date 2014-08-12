@@ -39,6 +39,10 @@ class GUI {
   }
 
   public void setUp() {
+    
+    // MAIN SETTINGS ========================================
+    size(1200, 600, JAVA2D);
+
     // MOVE GRID ============================================
     col = 6;
     row = ceil(float(nbrOfMoves) / float(col));
@@ -56,7 +60,6 @@ class GUI {
     fontA32 = createFont("Arial", 32);
     fontA12 = createFont("Arial", 16);
 
-
     // IMAGES ===============================================
     loadImages();
 
@@ -67,8 +70,6 @@ class GUI {
     strokeWeight(3);
     smooth();
 
-    size(1200, 600, JAVA2D);
-    //println("w = " + context.depthWidth() + ", h = " + context.depthHeight());
     pg = createGraphics(context.depthWidth(), context.depthHeight());
     //pg = createGraphics(context.depthWidth(), context.depthHeight(), P2D);
 
@@ -260,7 +261,6 @@ class GUI {
   }
 
   private void drawMatchingBar(User user, int moveId) {
-
     Move move = moves[moveId];
     if (!move.empty)
     {
@@ -268,25 +268,25 @@ class GUI {
       user.rb.cost[moveId] = user.rb.pathcost(moveId);
       user.rb.cost[moveId] = (log(user.rb.cost[moveId]-1.0) - 5.5)/2.0;
 
-      float matching = 100.0 * (1 - user.rb.cost[moveId]);
+      float matching = 1.0 - user.rb.cost[moveId];
 
       fill(user.c);
-      if ( user.rb.cost[moveId] <= 0.25 )
+      if (matching >= 0.75 )
         fill(0, 255, 0);
 
-      if (user.rb.cost[moveId] > 0.25 && user.rb.cost[moveId] < 0.35)
+      if (matching < 0.75 && matching > 0.65)
         fill(user.c, 200);
 
       // Positioning
-      int c = moveId / col;
-      int r = moveId % col;
+      int r = moveId / col;
+      int c = moveId % col;
       PVector cellOrigin = new PVector();
       cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
       cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
 
-      rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, 1.0-user.rb.cost[moveId])) * cellWidth, 10);
+      rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, matching)) * float(cellWidth), 8);
 
-      if (user.rb.cost[moveId] < 0.3 && user.rb.costLast[moveId] >= 0.3)
+      if ( matching >= 0.7) // TODO : move.triggerAt
       {
         println("found gesture #" + moveId + " user : " + user.name);
         server.send(move, user);
