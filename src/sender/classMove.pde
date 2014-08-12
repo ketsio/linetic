@@ -10,7 +10,7 @@ class Move {
   public boolean normRotation = defaultNormRotation;
   public int framesGesture = defaultFramesGesture;
   
-  void Move() {
+  public Move() {
     for (int i = 0; i < framesGestureMax; i++) poses[i] = new Pose();
   }
   

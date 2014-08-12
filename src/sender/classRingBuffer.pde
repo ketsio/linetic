@@ -38,7 +38,7 @@ class RingBuffer
 
   void copyBuffer(Move move) {
     println("copy buffer!");
-    for (int i = 0; i < framesGestureMax; i++)
+    for (int i = 0; i < framesGestureMax; i++) 
       move.get(i).copyFrom(poseArray[(startOfBuffer + i + framesGestureMax) % framesInputMax]);
   }  
 
