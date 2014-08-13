@@ -102,24 +102,12 @@ class GUI {
     pg.beginDraw();
     pg.image(context.depthImage(), 0, 0);
 
-    //ringbuffer[0].display();
-
     // process the skeleton if it's available
     for (User u : users.values ())
       if (context.isTrackingSkeleton(u.id))
         evaluateSkeleton(u.id);
 
     pg.endDraw();
-
-    //  counter2++;
-    //  counter2 %= 25;
-    //  if (counter2 == 0)
-    //  {
-    //    OscMessage myMessage = new OscMessage("/status");
-    //    if (foundSkeleton) myMessage.add("tracking ...");
-    //    if (!foundSkeleton) myMessage.add("looking for pose ...");
-    //    oscP5.send(myMessage, myRemoteLocation);
-    //  }
 
 
     if (!mirrored)
@@ -136,16 +124,11 @@ class GUI {
 
     if (users.isEmpty()) 
     {
-      stroke(0, 0, 0);
-      fill(0, 0, 0);
-      rect(context.depthWidth() + 2 * padding, padding, 200, context.depthHeight());
-
-      stroke(0, 0, 255);
-      fill(255, 0, 0);
       textFont(fontA32, 32);
       textAlign(CENTER);
       text("Please register user!", context.depthWidth() / 2, 40);
       image(shapeOfUser, 0, 0);
+      
     } else if ((warning[0] >= 0) || (warning[1] >= 0))
     {
       if ((warning[0] >= 0) && (warning[1] < 0))
@@ -163,6 +146,10 @@ class GUI {
 
     // Grid of Moves
     displayGrid();
+    
+    // Grid Buffer of the highlighted user
+    if (highlightedUser != null)
+      highlightedUser.rb.display();
   }
 
   public void update() {

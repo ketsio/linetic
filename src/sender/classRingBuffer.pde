@@ -4,11 +4,11 @@ class RingBuffer
   Pose[] poseNormalizedArray;
   int startOfBuffer = 0;
   boolean enoughFrames = false;
-  
+
   Float d[][][] = new Float[nbrOfMoves][framesGestureMax][framesInputMax];
   int P[][][] = new int[nbrOfMoves][framesGestureMax][framesInputMax];
   Float D[][] = new Float[framesGestureMax][framesInputMax];
-  
+
   float cost[] = new float[nbrOfMoves];
   float costLast[] = new float[nbrOfMoves];
 
@@ -27,7 +27,7 @@ class RingBuffer
           d[moveId][n][m] = 0.0;
     }
   }
-  
+
   void next() {
     startOfBuffer = (startOfBuffer + 1) % framesInputMax;
     if (!enoughFrames)
@@ -42,7 +42,7 @@ class RingBuffer
     next();
     poseArray[startOfBuffer].copyFrom(newPose);
   }
-  
+
 
   // a new rotation normalized pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
   // the ring buffer mechanism uses one pointer which is set in fillBufer(), not in this routine
@@ -56,20 +56,20 @@ class RingBuffer
     for (int i = 0; i < framesGestureMax; i++) 
       move.get(i).copyFrom(poseArray[(startOfBuffer + i + framesGestureMax) % framesInputMax]);
   }  
-  
+
 
   float cost(Move move, int poseId, int thatId) 
   {
     return cost(move, move.get(poseId), poseArray[thatId]);
   }
-  
+
 
   float costNormalized(Move move, int poseId, int thatId) 
   {
     return cost(move, move.get(poseId), poseNormalizedArray[thatId]);
   }
-  
-    // calculate the cost of one frame
+
+  // calculate the cost of one frame
   float cost(Move move, Pose pose, Pose that) 
   {
     if (move.weightLeftOrRight > 1.0) move.weightLeftOrRight = 1.0;
@@ -79,27 +79,27 @@ class RingBuffer
     float weight_right = 1.0 - move.weightLeftOrRight;
 
     float mse = 0.0;
-    
+
     mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftShoulderRelative.x - that.jointLeftShoulderRelative.x) 
       + move.weightY * sq(pose.jointLeftShoulderRelative.y - that.jointLeftShoulderRelative.y)
       + move.weightZ * sq(pose.jointLeftShoulderRelative.z - that.jointLeftShoulderRelative.z) );
-      
+
     mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftElbowRelative.x - that.jointLeftElbowRelative.x)
       + move.weightY * sq(pose.jointLeftElbowRelative.y - that.jointLeftElbowRelative.y)
       + move.weightZ * sq(pose.jointLeftElbowRelative.z - that.jointLeftElbowRelative.z) );
-      
+
     mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftHandRelative.x - that.jointLeftHandRelative.x)
       + move.weightY * sq(pose.jointLeftHandRelative.y - that.jointLeftHandRelative.y)
       + move.weightZ * sq(pose.jointLeftHandRelative.z - that.jointLeftHandRelative.z) );
-      
+
     mse += weight_right * sqrt( move.weightX * sq(pose.jointRightShoulderRelative.x - that.jointRightShoulderRelative.x)
       + move.weightY * sq(pose.jointRightShoulderRelative.y - that.jointRightShoulderRelative.y)
       + move.weightZ * sq(pose.jointRightShoulderRelative.z - that.jointRightShoulderRelative.z) );
-      
+
     mse += weight_right * sqrt( move.weightX * sq(pose.jointRightElbowRelative.x - that.jointRightElbowRelative.x)
       + move.weightY * sq(pose.jointRightElbowRelative.y - that.jointRightElbowRelative.y)
       + move.weightZ * sq(pose.jointRightElbowRelative.z - that.jointRightElbowRelative.z) );
-      
+
     mse += weight_right * sqrt( move.weightX * sq(pose.jointRightHandRelative.x - that.jointRightHandRelative.x)
       + move.weightY * sq(pose.jointRightHandRelative.y - that.jointRightHandRelative.y)
       + move.weightZ * sq(pose.jointRightHandRelative.z - that.jointRightHandRelative.z) );
@@ -112,18 +112,18 @@ class RingBuffer
   float pathcost(int moveId)
   {
     Move move = moves[moveId];
-    
+
     int framesAnalyzed = move.framesGesture * 2;
     int framesDelayed = 2;
     int startOfAnalysis = (startOfBuffer - framesAnalyzed) % framesInputMax;
-    
+
     // evaluate only for the last move.framesGesture frames (compare with the last pose i.e. the pose at startOfBuffer)
     if (move.normRotation)
       for (int m = 0; m < move.framesGesture; m++)
         d[moveId][m][startOfBuffer] = costNormalized(move, m, startOfBuffer);
     else
       for (int m = 0; m < move.framesGesture; m++)
-        d[moveId][m][startOfBuffer] = cost(move, m, startOfBuffer);
+      d[moveId][m][startOfBuffer] = cost(move, m, startOfBuffer);
 
     float cost = 0;
     if (enoughFrames)
@@ -171,9 +171,9 @@ class RingBuffer
       int n = N;
       speed[moveId] = 0.0;
       float adjust = framesGestureMax;
-      
+
       // Backtracking From [M,N] to [0,0]
-      for (int i = 0; i < M*N; i++) 
+      for (int i = 0; i < M+N; i++) 
       {
         int currentCell = P[moveId][m][n];
         if (currentCell >= 0) m--;
@@ -206,114 +206,110 @@ class RingBuffer
     return cost;
   }
 
+
   void display() 
   {
-    if (counter < framesInputMax+1) return;
+    PVector bufferOrigin = new PVector(context.depthWidth() + 2 * gui.padding, gui.padding);
+    int bufferWidth = int(width - gui.padding - bufferOrigin.x);
+    int bufferHeight = int(bufferWidth / 2.0);
+    PVector textOrigin = new PVector(context.depthWidth() + 2 * gui.padding, 2 * gui.padding + bufferHeight);
+    display(bufferOrigin, bufferWidth, bufferHeight, textOrigin);
+  }
+  
+  
+  void display(PVector bufferOrigin, int bufferWidth, int bufferHeight, PVector textOrigin) 
+  {
+    if (!enoughFrames) return;
     float maximum = 0;
 
+    Move move = moves[gui.displayCost];
+    int framesAnalyzed = move.framesGesture * 2;
+    int framesDelayed = 2;
+    int startOfAnalysis = (startOfBuffer - framesAnalyzed) % framesInputMax;
+
+    int squareWidth = bufferWidth / (framesAnalyzed - framesDelayed);
+    int squareHeight = bufferHeight / move.framesGesture;
+
+    for (int m = 0; m < move.framesGesture; m++) 
+      for (int n = 0; n < framesAnalyzed; n++) 
+        if (d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] > maximum)
+          maximum  = d[gui.displayCost][m][n];
+
     noStroke(); 
-    for (int n = 0; n < (framesGestureMax-1); n++) 
-      for (int m = 0; m < (framesInputMax-1); m++) 
-        if (d[gui.displayCost][n][m] > maximum)
-          maximum  = d[gui.displayCost][n][m];
-
     fill(0, 0, 0);
-    rect(context.depthWidth(), 90, 200, 400);
+    rect(bufferOrigin.x, bufferOrigin.y, bufferWidth, bufferHeight);
 
-    for (int i = framesGestureMax-moves[gui.displayCost].framesGesture; i < (framesGestureMax-1); i++)
-    {
-      for (int j = framesInputMax-2*moves[gui.displayCost].framesGesture; j < (framesInputMax-1); j++)
+    for (int m = 0; m < move.framesGesture; m++) {
+      for (int n = 0; n < framesAnalyzed; n++)
       {
-        float value = 255-255*d[gui.displayCost][i][(j + startOfBuffer) % framesInputMax]/maximum;
+        float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
         fill(value);
-        rect(context.depthWidth() + (i-framesGestureMax+moves[gui.displayCost].framesGesture)*400.0/(2.0*moves[gui.displayCost].framesGesture), (j-framesInputMax+2*moves[gui.displayCost].framesGesture)*400.0/(2.0*moves[gui.displayCost].framesGesture)+90.0, 400.0/(2.0*moves[gui.displayCost].framesGesture), 400.0/(2.0*moves[gui.displayCost].framesGesture));
+        rect(bufferOrigin.x + m * squareWidth, bufferOrigin.y + n * squareHeight, squareWidth, squareHeight);
       }
     }
 
-    int n = framesGestureMax-2;
-    int m = framesInputMax-2;   
+    int m = move.framesGesture;
+    int n = framesAnalyzed - framesDelayed;
+
     for (int i = 0; i <= steps[gui.displayCost]; i++) 
     {
-      float value = 255-255*d[gui.displayCost][n][(m + startOfBuffer) % framesGestureMax]/maximum;
+      float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
       fill(value, 0, 0);
-      rect(context.depthWidth() + (n-framesGestureMax+moves[gui.displayCost].framesGesture)*400/(2*moves[gui.displayCost].framesGesture), (m-framesInputMax+2*moves[gui.displayCost].framesGesture)*400/(2*moves[gui.displayCost].framesGesture)+90, 400/(2*moves[gui.displayCost].framesGesture), 400/(2*moves[gui.displayCost].framesGesture));                        
-      int tempN = n;
-      if (P[gui.displayCost][n][m] >= 0) tempN--;
-      if (P[gui.displayCost][n][m] <= 0) m--;
-      n = tempN;
-      if (n < 0) n = 0;
-    }
+      rect(bufferOrigin.x + m * squareWidth, bufferOrigin.y + n * squareHeight, squareWidth, squareHeight);  
 
-    fill(0, 0, 0);
-    rect(context.depthWidth(), 0, 195, 90);
+      int currentCell = P[gui.displayCost][m][n];
+      if (currentCell >= 0) max(--m, 0);
+      if (currentCell <= 0) max(--n, 0);
+    }
 
     textAlign(CENTER);
     textFont(gui.fontA32, 32);
-    fill(255, 255, 255);
-    text("analyse", context.depthWidth() + 100, 35);
-    text("figure #" + gui.displayCost, context.depthWidth() + 100, 75);
-    
+    fill(0);
+    text("analyse", textOrigin.x, textOrigin.y);
+    text("figure #" + gui.displayCost, textOrigin.x, textOrigin.y + 40);
+
     // find best match
     if (cost.length < 1) return;
     float bestcost = cost[0];
     int whichcost = 0;
     for (int i = 0; i < nbrOfMoves; i++)
-    {
-      if (!moves[i].empty && cost[i] < bestcost)
-      {
+      if (!moves[i].empty && cost[i] < bestcost) {
         bestcost = cost[i];
         whichcost = i;
       }
-    }
 
     if (cost[whichcost] < 0.3 && costLast[whichcost] >= 0.3)
     {
-      fill(0, 0, 0);
-      rect(context.depthWidth() + 200, 0, 200, 90);
-
-      stroke(0, 0, 0);
-      fill(255, 255, 255);
-
-      text("found", context.depthWidth() + 300, 35);  
-      text("event #" + whichcost, context.depthWidth() + 300, 75);
+      text("found", textOrigin.x + 100, textOrigin.y);  
+      text("event #" + whichcost, textOrigin.x + 100, textOrigin.y + 40);
       counterEvent = 25;
     }
 
     if (counterEvent < 1)
     {
-      fill(0, 0, 0);
-      rect(context.depthWidth() + 200, 0, 200, 200);
-
-      stroke(0, 0, 0);
-      fill(255, 255, 255);
-
-      text("found", context.depthWidth() + 300, 35);
-      text("no event", context.depthWidth() + 300, 75);
-    } else
-    {
+      text("found", textOrigin.x + 100, textOrigin.y);  
+      text("no event", textOrigin.x + 100, textOrigin.y + 40);
+    } else {
       counterEvent--;
     }
 
     if (costLast[whichcost] < 0.3 && costLast[whichcost] > cost[whichcost])
     {
-      fill(0, 0, 0);
-      rect(context.depthWidth() + 200, 80, 200, 200);
-
-      fill(255, 255, 255);
-      text("motion speed:", context.depthWidth() + 300, 115); 
+      text("motion speed:", textOrigin.x + 100, textOrigin.y + 80); 
 
       if (speed[whichcost] < 1.0/1.5) 
-        text("much faster", context.depthWidth() + 300, 155);
+        text("much faster", textOrigin.x + 100, textOrigin.y + 120); 
       else if (speed[whichcost] < 1.0/1.25) 
-        text("faster", context.depthWidth() + 300, 155);
+        text("faster", textOrigin.x + 100, textOrigin.y + 120); 
       else if ( (speed[whichcost] >= 1.0/1.25) && (speed[whichcost] <= 1.25) )
-        text("similar", context.depthWidth() + 300, 155);
+        text("similar", textOrigin.x + 100, textOrigin.y + 120); 
       else if (speed[whichcost] > 1.5) 
-        text("much slower", context.depthWidth() + 300, 155);
+        text("much slower", textOrigin.x + 100, textOrigin.y + 120); 
       else if (speed[whichcost] > 1.25) 
-        text("slower", context.depthWidth() + 300, 155);
+        text("slower", textOrigin.x + 100, textOrigin.y + 120); 
 
       counterEvent = 25;
     }
   }
 }
+
