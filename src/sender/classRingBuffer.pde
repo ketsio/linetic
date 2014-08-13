@@ -3,21 +3,20 @@ class RingBuffer
   Pose[] poseArray;
   Pose[] poseNormalizedArray;
   int startOfBuffer = 0;
+  boolean enoughFrames = false;
   
   Float d[][][] = new Float[nbrOfMoves][framesGestureMax][framesInputMax];
   int P[][][] = new int[nbrOfMoves][framesGestureMax][framesInputMax];
   Float D[][] = new Float[framesGestureMax][framesInputMax];
   
-  float cost[];
-  float costLast[];
+  float cost[] = new float[nbrOfMoves];
+  float costLast[] = new float[nbrOfMoves];
+
 
   // constructor
   RingBuffer () {
     poseArray = new Pose[framesInputMax];
     poseNormalizedArray = new Pose[framesInputMax];
-    
-    cost = new float[nbrOfMoves];
-    costLast = new float[nbrOfMoves];
 
     for (int m = 0; m < framesInputMax; m++) 
     {
@@ -28,14 +27,22 @@ class RingBuffer
           d[moveId][n][m] = 0.0;
     }
   }
+  
+  void next() {
+    startOfBuffer = (startOfBuffer + 1) % framesInputMax;
+    if (!enoughFrames)
+      counter++;
+    else if (counter >= framesInputMax)
+      enoughFrames = true;
+  }
 
   // a new pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
   // the ring buffer mechanism uses one pointer: startOfBuffer to determine the current start of a pose
   void fillBuffer(Pose newPose) {
-    startOfBuffer = (startOfBuffer + 1) % framesInputMax;
-    counter++;
+    next();
     poseArray[startOfBuffer].copyFrom(newPose);
   }
+  
 
   // a new rotation normalized pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
   // the ring buffer mechanism uses one pointer which is set in fillBufer(), not in this routine
@@ -43,21 +50,25 @@ class RingBuffer
     poseNormalizedArray[startOfBuffer].copyFrom(newPose);
   }
 
+
   void copyBuffer(Move move) {
     println("copy buffer!");
     for (int i = 0; i < framesGestureMax; i++) 
       move.get(i).copyFrom(poseArray[(startOfBuffer + i + framesGestureMax) % framesInputMax]);
   }  
+  
 
   float cost(Move move, int poseId, int thatId) 
   {
     return cost(move, move.get(poseId), poseArray[thatId]);
   }
+  
 
   float costNormalized(Move move, int poseId, int thatId) 
   {
     return cost(move, move.get(poseId), poseNormalizedArray[thatId]);
   }
+  
     // calculate the cost of one frame
   float cost(Move move, Pose pose, Pose that) 
   {
@@ -96,98 +107,100 @@ class RingBuffer
     return mse;
   }
 
+
   // calculate the 'cost' of the different moves using DTW
   float pathcost(int moveId)
   {
     Move move = moves[moveId];
-    if (move.normRotation)
-      // evaluate only for move.framesGesture frames (the last frames)
-      for (int n = (framesGestureMax - move.framesGesture); n < framesGestureMax; n++)
-        d[moveId][n][(startOfBuffer + framesInputMax - 1) % framesInputMax] = costNormalized( move, (n+framesGestureMax+1)% framesGestureMax, (0 + startOfBuffer) % framesInputMax);
     
+    int framesAnalyzed = move.framesGesture * 2;
+    int framesDelayed = 2;
+    int startOfAnalysis = (startOfBuffer - framesAnalyzed) % framesInputMax;
+    
+    // evaluate only for the last move.framesGesture frames (compare with the last pose i.e. the pose at startOfBuffer)
+    if (move.normRotation)
+      for (int m = 0; m < move.framesGesture; m++)
+        d[moveId][m][startOfBuffer] = costNormalized(move, m, startOfBuffer);
     else
-      // evaluate only for move.framesGesture frames (the last frames)
-      for (int n = (framesGestureMax - move.framesGesture); n < framesGestureMax; n++)
-        d[moveId][n][(startOfBuffer + framesInputMax - 1) % framesInputMax] = cost( move, (n+framesGestureMax+1)% framesGestureMax, (0 + startOfBuffer) % framesInputMax);
+      for (int m = 0; m < move.framesGesture; m++)
+        d[moveId][m][startOfBuffer] = cost(move, m, startOfBuffer);
 
     float cost = 0;
-    if (counter > framesInputMax+1)
+    if (enoughFrames)
     {
-      D[framesGestureMax-move.framesGesture][framesInputMax-2*move.framesGesture] = d[moveId][framesGestureMax-move.framesGesture][(startOfBuffer) % framesInputMax];
-      P[moveId][framesGestureMax-move.framesGesture][framesInputMax-2*move.framesGesture] = 0;
+      D[0][0] = d[moveId][0][startOfAnalysis];
+      P[moveId][0][0] = 0;
 
-      // evaluate only for move.framesGesture frames (the last frames)
-      for (int n= (framesGestureMax-move.framesGesture+1); n<framesGestureMax; n++)
-      {
-        D[n][framesInputMax-2*move.framesGesture]=d[moveId][n][(startOfBuffer) % (2*move.framesGesture)] + D[n-1][framesInputMax-2*move.framesGesture];
-        P[moveId][n][framesInputMax-2*move.framesGesture] = 1;
+      for (int m = 1; m < move.framesGesture; m++) {
+        D[m][0] = d[moveId][m][startOfAnalysis] + D[m-1][0];
+        P[moveId][m][0] = 1;
       }
 
-      for (int m= (framesInputMax-2*move.framesGesture)+1; m<framesInputMax; m++)
-      {
-        D[framesGestureMax-move.framesGesture][m] = d[moveId][0][(m + startOfBuffer) % (2*move.framesGesture)];
-        P[moveId][framesGestureMax-move.framesGesture][m] = -1;
+      for (int n = 1; n < framesAnalyzed; n++) {
+        D[0][n] = d[moveId][0][(n + startOfAnalysis) % framesInputMax] + D[0][n-1];
+        P[moveId][0][n] = -1;
       }
 
-      // evaluate only for move.framesGesture frames (the last frames)
-      for (int n= (framesGestureMax-move.framesGesture+1); n<framesGestureMax; n++)
-        for (int m= (framesInputMax-2*move.framesGesture)+1; m<framesInputMax; m++)
-          D[n][m] = d[moveId][n][(m + startOfBuffer) % framesInputMax] + min( D[n-1][m-1], D[n][m-1], D[n][m-1] );
+      for (int m = 1; m < move.framesGesture; m++)
+        for (int n = 1; n < framesAnalyzed; n++)
+          D[m][n] = d[moveId][m][(n + startOfAnalysis) % framesInputMax] + min( D[m-1][n-1], D[m][n-1], D[m-1][n] );
 
-      float countAdjust = 3.0;
-      // evaluate only for move.framesGesture frames (the last frames)
-      for (int n= (framesGestureMax-move.framesGesture+1); n<framesGestureMax; n++) {
-        for (int m= (framesInputMax-2*move.framesGesture)+1; m<framesInputMax; m++)
+      // float countAdjust = 3.0;
+
+      for (int m = 1; m < move.framesGesture; m++) {
+        for (int n = 1; n < framesAnalyzed; n++)
         {
-          P[moveId][n][m] = 0;
-          if (D[n][m-1] < D[n-1][m-1]) P[moveId][n][m] = -1;
-          if (D[n-1][m] < D[n-1][m-1]) 
-          {
-            P[moveId][n][m] = 1;
-            if (D[n][m-1] < D[n-1][m]) P[moveId][n][m] = -1;
+          P[moveId][m][n] = 0;
+          if (D[m][n-1] < D[m-1][n-1]) P[moveId][m][n] = -1;
+          if (D[m-1][n] < D[m-1][n-1]) {
+            P[moveId][m][n] = 1;
+            if (D[m][n-1] < D[m-1][n]) P[moveId][m][n] = -1;
           }
           // adjust a little here to detect faster events
-          if (P[moveId][n][m] < 0)
-          {
-            D[framesGestureMax-2][framesInputMax-2] -= 0.01/countAdjust*(1.0-(counterEvent/25.0))*D[n][m]; 
-            countAdjust++;
-          }
+          // if (P[moveId][m][n] < 0)
+          // {
+          //  D[framesGestureMax-2][framesInputMax-2] -= 0.01/countAdjust*(1.0-(counterEvent/25.0))*D[m][n]; 
+          //  countAdjust++;
+          // }
         }
       }
 
-      int n = framesGestureMax-2;
-      int m = framesInputMax-2;   
+      int M = move.framesGesture;
+      int N = framesAnalyzed - framesDelayed;
+      int m = M;
+      int n = N;
       speed[moveId] = 0.0;
       float adjust = framesGestureMax;
-      for (int i = 0; i < 2*framesInputMax; i++) 
+      
+      // Backtracking From [M,N] to [0,0]
+      for (int i = 0; i < M*N; i++) 
       {
-        int tempN = n;
-        if (P[moveId][n][m] >= 0) tempN--;
-        if (P[moveId][n][m] <= 0) m--;
-        n = tempN;  
+        int currentCell = P[moveId][m][n];
+        if (currentCell >= 0) m--;
+        if (currentCell <= 0) n--;
 
         // average speed values 
-        // speed[moveId] -=  m-0.5*framesInputMax-n;
+        // speed[moveId] -=  n-0.5*framesInputMax-m;
 
-        if (n == framesGestureMax - 4) 
-          speed[moveId] = m;
+        if (m == framesGestureMax - 4) 
+          speed[moveId] = n;
 
-        if (n <= framesGestureMax-move.framesGesture) 
+        if (m <= framesGestureMax-move.framesGesture) 
         {
           steps[moveId] = i;
-          adjust = (((float) framesInputMax)-m) / ((float) framesGestureMax);
+          adjust = (((float) framesInputMax)-n) / ((float) framesGestureMax);
           i = 2*framesInputMax;
         }
-        if (m < 0) m = 0;
+        if (n < 0) n = 0;
       }
       steps[moveId]++;
-      speed[moveId] -= m;
+      speed[moveId] -= n;
       speed[moveId] /= framesGestureMax-4.0;
       // speed[moveId] /= (float) steps[moveId];
 
       // better results by normalizing by framesGestureMax instead of steps
-      // cost = D[framesGestureMax-2][framesInputMax-2]/((float) framesGestureMax);
-      cost = D[framesGestureMax-2][framesInputMax-2]/steps[moveId];
+      // cost = D[move.framesGesture][framesAnalyzer - framesDelayed]/((float) move.framesGesture);
+      cost = D[move.framesGesture][framesAnalyzed - framesDelayed]/steps[moveId];
     }
 
     return cost;
