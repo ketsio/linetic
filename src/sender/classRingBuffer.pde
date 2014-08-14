@@ -11,6 +11,10 @@ class RingBuffer
 
   float cost[] = new float[nbrOfMoves];
   float costLast[] = new float[nbrOfMoves];
+  
+  // Settings
+  int framesDelayed = 2;
+  float quantiles = 5;
 
 
   // constructor
@@ -57,14 +61,12 @@ class RingBuffer
   }  
 
 
-  float cost(Move move, int poseId, int thatId) 
-  {
+  float cost(Move move, int poseId, int thatId) {
     return cost(move, move.get(poseId), poseArray[thatId]);
   }
 
 
-  float costNormalized(Move move, int poseId, int thatId) 
-  {
+  float costNormalized(Move move, int poseId, int thatId) {
     return cost(move, move.get(poseId), poseNormalizedArray[thatId]);
   }
 
@@ -112,42 +114,42 @@ class RingBuffer
   {
     Move move = moves[moveId];
 
-    int framesAnalyzed = move.framesGesture * 2;
-    int framesDelayed = 2;
-    int startOfAnalysis = (startOfBuffer - framesAnalyzed + framesInputMax) % framesInputMax;
+    int framesBufferAnalyzed = getFramesBufferAnalyzed(move);
+    int framesMoveAnalyzed = getFramesMoveAnalyzed(move);
+    //int endOfAnalysis = (startOfBuffer - framesBufferAnalyzed + framesInputMax) % framesInputMax;
 
     // evaluate only for the last move.framesGesture frames (compare with the last pose i.e. the pose at startOfBuffer)
     if (move.normRotation)
-      for (int m = 0; m < move.framesGesture; m++)
+      for (int m = 0; m < framesMoveAnalyzed; m++)
         d[moveId][m][startOfBuffer] = costNormalized(move, m, startOfBuffer);
     else
-      for (int m = 0; m < move.framesGesture; m++)
+      for (int m = 0; m < framesMoveAnalyzed; m++)
       d[moveId][m][startOfBuffer] = cost(move, m, startOfBuffer);
 
     float cost = 0;
     if (enoughFrames)
     {
-      D[0][0] = d[moveId][0][startOfAnalysis];
+      D[0][0] = d[moveId][framesMoveAnalyzed-1][startOfBuffer];
       P[moveId][0][0] = 0;
 
-      for (int m = 1; m < move.framesGesture; m++) {
-        D[m][0] = d[moveId][m][startOfAnalysis] + D[m-1][0];
+      for (int m = 0; m < framesMoveAnalyzed; m++) {
+        D[m][0] = d[moveId][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][startOfBuffer] + D[m-1][0];
         P[moveId][m][0] = 1;
       }
 
-      for (int n = 1; n < framesAnalyzed; n++) {
-        D[0][n] = d[moveId][0][(n + startOfAnalysis) % framesInputMax] + D[0][n-1];
+      for (int n = 0; n < framesBufferAnalyzed; n++) {
+        D[0][n] = d[moveId][framesMoveAnalyzed-1][(framesInputMax + startOfBuffer - n) % framesInputMax] + D[0][n-1];
         P[moveId][0][n] = -1;
       }
 
-      for (int m = 1; m < move.framesGesture; m++)
-        for (int n = 1; n < framesAnalyzed; n++)
-          D[m][n] = d[moveId][m][(n + startOfAnalysis) % framesInputMax] + min( D[m-1][n-1], D[m][n-1], D[m-1][n] );
+      for (int m = 1; m < framesMoveAnalyzed; m++)
+        for (int n = 1; n < framesBufferAnalyzed; n++)
+          D[m][n] = d[moveId][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][(framesInputMax + startOfBuffer - n) % framesInputMax] + min( D[m-1][n-1], D[m][n-1], D[m-1][n] );
 
       // float countAdjust = 3.0;
 
-      for (int m = 1; m < move.framesGesture; m++) {
-        for (int n = 1; n < framesAnalyzed; n++)
+      for (int m = 1; m < framesMoveAnalyzed; m++) {
+        for (int n = 1; n < framesBufferAnalyzed; n++)
         {
           P[moveId][m][n] = 0;
           if (D[m][n-1] < D[m-1][n-1]) P[moveId][m][n] = -1;
@@ -164,15 +166,22 @@ class RingBuffer
         }
       }
 
-      int M = move.framesGesture;
-      int N = framesAnalyzed - framesDelayed;
-      int m = M - 1;
-      int n = N - 1;
-      speed[moveId] = 0.0;
-      float adjust = framesGestureMax;
+      int M = framesMoveAnalyzed - 1;
+      int N = framesBufferAnalyzed - framesDelayed - 1;
+      int m = M;
+      int n = N;
+      
+      steps[moveId] = 1;
+      // float adjust = framesGestureMax;
+      
+      float firstQuantile = 1.0 / quantiles;
+      float lastQuantile = 1.0 - firstQuantile;
+      
+      int beginMove = -1;
+      int endMove = -1;
 
       // Backtracking From [M,N] to [0,0]
-      for (int i = 0; i < M+N; i++) 
+      while (m > 0 || n > 0) 
       {
         int currentCell = P[moveId][m][n];
         if (currentCell >= 0) max(m--, 0);
@@ -181,24 +190,30 @@ class RingBuffer
         // average speed values 
         // speed[moveId] -=  n-0.5*framesInputMax-m;
 
-        if (m == framesGestureMax - 4) 
-          speed[moveId] = n;
+        // if (m == framesGestureMax - 4) 
+        //   speed[moveId] = n;
 
-        if (m <= framesGestureMax-move.framesGesture) 
-        {
-          steps[moveId] = i;
-          adjust = (((float) framesInputMax)-n) / ((float) framesGestureMax);
-          i = 2*framesInputMax;
-        }
+        // if (m <= framesGestureMax-framesMoveAnalyzed) 
+        // {
+        //   steps[moveId] = i;
+        //   adjust = (((float) framesInputMax)-n) / ((float) framesGestureMax);
+        //   i = 2*framesInputMax;
+        // }
+        
+        if(m <= firstQuantile && endMove == -1)
+          endMove = n;
+          
+        if(m <= lastQuantile && beginMove == -1)
+          beginMove = n;
+        
+        steps[moveId]++;
       }
-      steps[moveId]++;
-      speed[moveId] -= n;
-      speed[moveId] /= framesGestureMax-4.0;
-      // speed[moveId] /= (float) steps[moveId];
+      speed[moveId] = abs(endMove - beginMove);
+      speed[moveId] /= framesMoveAnalyzed;
 
       // better results by normalizing by framesGestureMax instead of steps
-      // cost = D[move.framesGesture][framesAnalyzer - framesDelayed]/((float) move.framesGesture);
-      cost = D[move.framesGesture - 1][framesAnalyzed - framesDelayed - 1]/steps[moveId];
+      // cost = D[M][N]/((float) move.framesGesture);
+      cost = D[M][N]/steps[moveId];
     }
 
     return cost;
@@ -221,42 +236,43 @@ class RingBuffer
     float maximum = 0;
 
     Move move = moves[gui.displayCost];
-    int framesAnalyzed = move.framesGesture * 2;
-    int framesDelayed = 2;
-    int startOfAnalysis = (startOfBuffer - framesAnalyzed + framesInputMax) % framesInputMax;
-    println("start of analysis : " + startOfAnalysis);
+    int framesBufferAnalyzed = getFramesBufferAnalyzed(move);
+    int framesMoveAnalyzed = getFramesMoveAnalyzed(move);
 
-    int squareWidth = bufferWidth / (framesAnalyzed - framesDelayed);
-    int squareHeight = bufferHeight / move.framesGesture;
+    int squareWidth = bufferWidth / (framesBufferAnalyzed - framesDelayed);
+    int squareHeight = bufferHeight / framesMoveAnalyzed;
 
-    for (int m = 0; m < move.framesGesture; m++) 
-      for (int n = 0; n < framesAnalyzed; n++) 
-        if (d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] > maximum)
-          maximum  = d[gui.displayCost][m][n];
+    for (int m = 0; m < framesMoveAnalyzed; m++) 
+      for (int n = 0; n < framesBufferAnalyzed; n++) 
+        if (d[gui.displayCost][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][(framesInputMax + startOfBuffer - n) % framesInputMax] > maximum)
+          maximum  = d[gui.displayCost][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][(framesInputMax + startOfBuffer - n) % framesInputMax];
           
     //println("maximum : " + maximum);
 
     noStroke(); 
     fill(0, 0, 0);
 
-    for (int m = 0; m < move.framesGesture; m++) {
-      for (int n = 0; n < framesAnalyzed; n++)
+    for (int m = 0; m < framesMoveAnalyzed; m++) {
+      for (int n = 0; n < framesBufferAnalyzed; n++)
       {
-        float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
-        //print(d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] + "  ");
+        int a = (framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax;
+        int b = (framesInputMax + startOfBuffer - n) % framesInputMax;
+        float value = 255 - 255 * d[gui.displayCost][a][b] / maximum;
         fill(value);
-        rect(bufferOrigin.x + n * squareWidth, bufferOrigin.y + m * squareHeight, squareWidth, squareHeight);
+        rect(bufferOrigin.x + b * squareWidth, bufferOrigin.y + a * squareHeight, squareWidth, squareHeight);
       }
     }
 
     int m = move.framesGesture - 1;
-    int n = framesAnalyzed - framesDelayed - 1;
+    int n = framesBufferAnalyzed - framesDelayed - 1;
 
     for (int i = 0; i <= steps[gui.displayCost]; i++) 
     {
-      float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
+      int a = (framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax;
+      int b = (framesInputMax + startOfBuffer - n) % framesInputMax;
+      float value = 255 - 255 * d[gui.displayCost][a][b] / maximum;
       fill(value, 0, 0);
-      rect(bufferOrigin.x + n * squareWidth, bufferOrigin.y + m * squareHeight, squareWidth, squareHeight);  
+      rect(bufferOrigin.x + b * squareWidth, bufferOrigin.y + a * squareHeight, squareWidth, squareHeight);  
 
       int currentCell = P[gui.displayCost][m][n];
       if (currentCell >= 0) max(--m, 0);
@@ -264,7 +280,7 @@ class RingBuffer
     }
 
     textAlign(LEFT);
-    textFont(gui.fontA12, 32);
+    textFont(gui.fontA12);
     fill(0);
     text("analysing gesture #" + gui.displayCost, textOrigin.x, textOrigin.y);
 
@@ -280,35 +296,30 @@ class RingBuffer
 
     if (cost[whichcost] < 0.3 && costLast[whichcost] >= 0.3)
     {
-      text("found gesture #" + whichcost, textOrigin.x, textOrigin.y + 50);
+      text("found gesture #" + whichcost, textOrigin.x, textOrigin.y + 40);
       counterEvent = 25;
     }
 
     if (counterEvent < 1)
     {
-      text("found", textOrigin.x + 100, textOrigin.y);  
-      text("no event", textOrigin.x + 100, textOrigin.y + 40);
+      text("found no event", textOrigin.x, textOrigin.y + 40);
     } else {
       counterEvent--;
     }
 
     if (costLast[whichcost] < 0.3 && costLast[whichcost] > cost[whichcost])
     {
-      text("motion speed:", textOrigin.x + 100, textOrigin.y + 80); 
-
-      if (speed[whichcost] < 1.0/1.5) 
-        text("much faster", textOrigin.x + 100, textOrigin.y + 120); 
-      else if (speed[whichcost] < 1.0/1.25) 
-        text("faster", textOrigin.x + 100, textOrigin.y + 120); 
-      else if ( (speed[whichcost] >= 1.0/1.25) && (speed[whichcost] <= 1.25) )
-        text("similar", textOrigin.x + 100, textOrigin.y + 120); 
-      else if (speed[whichcost] > 1.5) 
-        text("much slower", textOrigin.x + 100, textOrigin.y + 120); 
-      else if (speed[whichcost] > 1.25) 
-        text("slower", textOrigin.x + 100, textOrigin.y + 120); 
-
+      text("speed: " + speed[whichcost], textOrigin.x, textOrigin.y + 80); 
       counterEvent = 25;
     }
+  }
+  
+  private int getFramesBufferAnalyzed(Move move) {
+    return move.framesGesture * 2;
+  }
+  
+  private int getFramesMoveAnalyzed(Move move) {
+    return move.framesGesture;
   }
 }
 
