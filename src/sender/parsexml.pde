@@ -150,7 +150,7 @@ Float parseBodypart(String str) {
 }
 
 User getRandomUser() {
-  if (users.values().isEmpty())
+  if (users.isEmpty())
     return null;
   List<User> currentUsers = new ArrayList<User>(users.values());
   return currentUsers.get(int(random(currentUsers.size())));

@@ -167,24 +167,23 @@ void onNewUser(SimpleOpenNI kinect, int userId)
     highlightedUser = user;
     
   users.put(userId, user);
+  kinect.startTrackingSkeleton(userId);
+  
   println("onNewUser - userId: " + userId);
   user.hello();
-
-
-  kinect.startTrackingSkeleton(userId);
 }
 
 void onLostUser(SimpleOpenNI kinect, int userId)
 {
+  User user = users.get(userId);
   users.remove(userId);
   if (users.isEmpty())
     highlightedUser = null;
   else if (highlightedUser.id == userId)
     highlightedUser = getRandomUser();
     
-  println("onLostUser - userId: " + userId);
-  //  if (!autoPoseDetection)
-  //    context.stopTrackingSkeleton(userId);
+  context.stopTrackingSkeleton(userId);
+  user.bye();
 }
 
 void onCompletedGesture(SimpleOpenNI context, int gestureType, PVector pos)

@@ -17,6 +17,10 @@ class User {
   void hello() {
     println("Hello " + name + " !");
   }
+  
+  void bye() {
+    println("Bye " + name + ".");
+  }
 
   void fillBuffer(Pose pose) {
     rb.fillBuffer(pose);

@@ -31,9 +31,8 @@ class RingBuffer
   void next() {
     startOfBuffer = (startOfBuffer + 1) % framesInputMax;
     if (!enoughFrames)
-      counter++;
-    else if (counter >= framesInputMax)
-      enoughFrames = true;
+      if (++counter >= framesInputMax)
+        enoughFrames = true;
   }
 
   // a new pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
@@ -115,7 +114,7 @@ class RingBuffer
 
     int framesAnalyzed = move.framesGesture * 2;
     int framesDelayed = 2;
-    int startOfAnalysis = (startOfBuffer - framesAnalyzed) % framesInputMax;
+    int startOfAnalysis = (startOfBuffer - framesAnalyzed + framesInputMax) % framesInputMax;
 
     // evaluate only for the last move.framesGesture frames (compare with the last pose i.e. the pose at startOfBuffer)
     if (move.normRotation)
@@ -167,8 +166,8 @@ class RingBuffer
 
       int M = move.framesGesture;
       int N = framesAnalyzed - framesDelayed;
-      int m = M;
-      int n = N;
+      int m = M - 1;
+      int n = N - 1;
       speed[moveId] = 0.0;
       float adjust = framesGestureMax;
 
@@ -176,8 +175,8 @@ class RingBuffer
       for (int i = 0; i < M+N; i++) 
       {
         int currentCell = P[moveId][m][n];
-        if (currentCell >= 0) m--;
-        if (currentCell <= 0) n--;
+        if (currentCell >= 0) max(m--, 0);
+        if (currentCell <= 0) max(n--, 0);
 
         // average speed values 
         // speed[moveId] -=  n-0.5*framesInputMax-m;
@@ -191,7 +190,6 @@ class RingBuffer
           adjust = (((float) framesInputMax)-n) / ((float) framesGestureMax);
           i = 2*framesInputMax;
         }
-        if (n < 0) n = 0;
       }
       steps[moveId]++;
       speed[moveId] -= n;
@@ -200,7 +198,7 @@ class RingBuffer
 
       // better results by normalizing by framesGestureMax instead of steps
       // cost = D[move.framesGesture][framesAnalyzer - framesDelayed]/((float) move.framesGesture);
-      cost = D[move.framesGesture][framesAnalyzed - framesDelayed]/steps[moveId];
+      cost = D[move.framesGesture - 1][framesAnalyzed - framesDelayed - 1]/steps[moveId];
     }
 
     return cost;
@@ -210,13 +208,13 @@ class RingBuffer
   void display() 
   {
     PVector bufferOrigin = new PVector(context.depthWidth() + 2 * gui.padding, gui.padding);
-    int bufferWidth = int(width - gui.padding - bufferOrigin.x);
+    int bufferWidth = int(width - 3 * gui.padding - bufferOrigin.x);
     int bufferHeight = int(bufferWidth / 2.0);
     PVector textOrigin = new PVector(context.depthWidth() + 2 * gui.padding, 2 * gui.padding + bufferHeight);
     display(bufferOrigin, bufferWidth, bufferHeight, textOrigin);
   }
-  
-  
+
+
   void display(PVector bufferOrigin, int bufferWidth, int bufferHeight, PVector textOrigin) 
   {
     if (!enoughFrames) return;
@@ -225,7 +223,8 @@ class RingBuffer
     Move move = moves[gui.displayCost];
     int framesAnalyzed = move.framesGesture * 2;
     int framesDelayed = 2;
-    int startOfAnalysis = (startOfBuffer - framesAnalyzed) % framesInputMax;
+    int startOfAnalysis = (startOfBuffer - framesAnalyzed + framesInputMax) % framesInputMax;
+    println("start of analysis : " + startOfAnalysis);
 
     int squareWidth = bufferWidth / (framesAnalyzed - framesDelayed);
     int squareHeight = bufferHeight / move.framesGesture;
@@ -234,39 +233,40 @@ class RingBuffer
       for (int n = 0; n < framesAnalyzed; n++) 
         if (d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] > maximum)
           maximum  = d[gui.displayCost][m][n];
+          
+    //println("maximum : " + maximum);
 
     noStroke(); 
     fill(0, 0, 0);
-    rect(bufferOrigin.x, bufferOrigin.y, bufferWidth, bufferHeight);
 
     for (int m = 0; m < move.framesGesture; m++) {
       for (int n = 0; n < framesAnalyzed; n++)
       {
         float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
+        //print(d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] + "  ");
         fill(value);
-        rect(bufferOrigin.x + m * squareWidth, bufferOrigin.y + n * squareHeight, squareWidth, squareHeight);
+        rect(bufferOrigin.x + n * squareWidth, bufferOrigin.y + m * squareHeight, squareWidth, squareHeight);
       }
     }
 
-    int m = move.framesGesture;
-    int n = framesAnalyzed - framesDelayed;
+    int m = move.framesGesture - 1;
+    int n = framesAnalyzed - framesDelayed - 1;
 
     for (int i = 0; i <= steps[gui.displayCost]; i++) 
     {
       float value = 255 - 255 * d[gui.displayCost][m][(n + startOfAnalysis) % framesInputMax] / maximum;
       fill(value, 0, 0);
-      rect(bufferOrigin.x + m * squareWidth, bufferOrigin.y + n * squareHeight, squareWidth, squareHeight);  
+      rect(bufferOrigin.x + n * squareWidth, bufferOrigin.y + m * squareHeight, squareWidth, squareHeight);  
 
       int currentCell = P[gui.displayCost][m][n];
       if (currentCell >= 0) max(--m, 0);
       if (currentCell <= 0) max(--n, 0);
     }
 
-    textAlign(CENTER);
-    textFont(gui.fontA32, 32);
+    textAlign(LEFT);
+    textFont(gui.fontA12, 32);
     fill(0);
-    text("analyse", textOrigin.x, textOrigin.y);
-    text("figure #" + gui.displayCost, textOrigin.x, textOrigin.y + 40);
+    text("analysing gesture #" + gui.displayCost, textOrigin.x, textOrigin.y);
 
     // find best match
     if (cost.length < 1) return;
@@ -280,8 +280,7 @@ class RingBuffer
 
     if (cost[whichcost] < 0.3 && costLast[whichcost] >= 0.3)
     {
-      text("found", textOrigin.x + 100, textOrigin.y);  
-      text("event #" + whichcost, textOrigin.x + 100, textOrigin.y + 40);
+      text("found gesture #" + whichcost, textOrigin.x, textOrigin.y + 50);
       counterEvent = 25;
     }
 

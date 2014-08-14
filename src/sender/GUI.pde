@@ -3,7 +3,7 @@ class GUI {
   // Properties 
   boolean mirrored = false;
   boolean updateDisplay = true;
-  int displayCost = 1;
+  int displayCost = 0;
   int padding = 15;
 
   // Pages
