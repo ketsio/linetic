@@ -39,7 +39,7 @@ class GUI {
   }
 
   public void setUp() {
-    
+
     // MAIN SETTINGS ========================================
     size(1200, 600, JAVA2D);
 
@@ -128,7 +128,6 @@ class GUI {
       textAlign(CENTER);
       text("Please register user!", context.depthWidth() / 2, 40);
       image(shapeOfUser, 0, 0);
-      
     } else if ((warning[0] >= 0) || (warning[1] >= 0))
     {
       if ((warning[0] >= 0) && (warning[1] < 0))
@@ -146,7 +145,7 @@ class GUI {
 
     // Grid of Moves
     displayGrid();
-    
+
     // Grid Buffer of the highlighted user
     if (highlightedUser != null)
       highlightedUser.rb.display();
@@ -248,36 +247,36 @@ class GUI {
   }
 
   private void drawMatchingBar(User user, int moveId) {
+    
     Move move = moves[moveId];
-    if (!move.empty)
+    if (move.empty)
+      return;
+
+    user.rb.updateCost(moveId);
+    println("cost : " + user.rb.cost[moveId]);
+
+    float matching = 1.0 - user.rb.cost[moveId];
+
+    fill(user.c);
+    if (matching >= 0.75 )
+      fill(0, 255, 0);
+
+    if (matching < 0.75 && matching > 0.65)
+      fill(user.c, 200);
+
+    // Positioning
+    int r = moveId / col;
+    int c = moveId % col;
+    PVector cellOrigin = new PVector();
+    cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
+    cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
+
+    rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, matching)) * float(cellWidth), 8);
+
+    if ( matching >= 0.7) // TODO : move.triggerAt
     {
-      user.rb.costLast[moveId] = user.rb.cost[moveId];
-      user.rb.cost[moveId] = user.rb.pathcost(moveId);
-      user.rb.cost[moveId] = (log(user.rb.cost[moveId]-1.0) - 5.5)/2.0;
-
-      float matching = 1.0 - user.rb.cost[moveId];
-
-      fill(user.c);
-      if (matching >= 0.75 )
-        fill(0, 255, 0);
-
-      if (matching < 0.75 && matching > 0.65)
-        fill(user.c, 200);
-
-      // Positioning
-      int r = moveId / col;
-      int c = moveId % col;
-      PVector cellOrigin = new PVector();
-      cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
-      cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
-
-      rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, matching)) * float(cellWidth), 8);
-
-      if ( matching >= 0.7) // TODO : move.triggerAt
-      {
-        println("found gesture #" + moveId + " user : " + user.name);
-        server.send(move, user);
-      }
+      println("found gesture #" + moveId + " user : " + user.name);
+      server.send(move, user);
     }
   }
 

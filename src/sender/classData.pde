@@ -23,6 +23,12 @@ class Data {
   void add(boolean val) {
     datalist.add(""+val);
   }
+  
+  void add(PVector val) {
+    datalist.add(""+val.x);
+    datalist.add(""+val.y);
+    datalist.add(""+val.z);
+  }
 
   void endSave(String _filename) {
     filename = _filename;
@@ -42,6 +48,10 @@ class Data {
     println("Loaded data from '"+filename+"', "+data.length+" lines.");
   }
 
+  PVector readVector() {
+    return new PVector(readFloat(), readFloat(), readFloat());
+  }
+  
   float readFloat() {
     return float(data[datalineId++]);
   }
@@ -65,29 +75,13 @@ class Data {
     for (int i = 1; i < framesGestureMax; i++)
     {
       pose = move.get(i);
-      add(pose.jointLeftShoulderRelative.x);
-      add(pose.jointLeftShoulderRelative.y);
-      add(pose.jointLeftShoulderRelative.z);
+      add(pose.jointLeftShoulderRelative);
+      add(pose.jointLeftElbowRelative);
+      add(pose.jointLeftHandRelative);
 
-      add(pose.jointLeftElbowRelative.x);
-      add(pose.jointLeftElbowRelative.y);
-      add(pose.jointLeftElbowRelative.z);
-
-      add(pose.jointLeftHandRelative.x);
-      add(pose.jointLeftHandRelative.y);
-      add(pose.jointLeftHandRelative.z);
-
-      add(pose.jointRightShoulderRelative.x);
-      add(pose.jointRightShoulderRelative.y);
-      add(pose.jointRightShoulderRelative.z);
-
-      add(pose.jointRightElbowRelative.x);
-      add(pose.jointRightElbowRelative.y);
-      add(pose.jointRightElbowRelative.z);
-
-      add(pose.jointRightHandRelative.x);
-      add(pose.jointRightHandRelative.y);
-      add(pose.jointRightHandRelative.z);
+      add(pose.jointRightShoulderRelative);
+      add(pose.jointRightElbowRelative);
+      add(pose.jointRightHandRelative);
     }
 
     // Saving
@@ -105,29 +99,13 @@ class Data {
     for (int i = 1; i < framesGestureMax; i++)
     {
       pose = move.get(i);
-      pose.jointLeftShoulderRelative.x = readFloat();
-      pose.jointLeftShoulderRelative.y = readFloat();
-      pose.jointLeftShoulderRelative.z = readFloat();
-
-      pose.jointLeftElbowRelative.x = readFloat();
-      pose.jointLeftElbowRelative.y = readFloat();
-      pose.jointLeftElbowRelative.z = readFloat();
-
-      pose.jointLeftHandRelative.x = readFloat();
-      pose.jointLeftHandRelative.y = readFloat();
-      pose.jointLeftHandRelative.z = readFloat();
-
-      pose.jointRightShoulderRelative.x = readFloat();
-      pose.jointRightShoulderRelative.y = readFloat();
-      pose.jointRightShoulderRelative.z = readFloat();
-
-      pose.jointRightElbowRelative.x = readFloat();
-      pose.jointRightElbowRelative.y = readFloat();
-      pose.jointRightElbowRelative.z = readFloat();
-
-      pose.jointRightHandRelative.x = readFloat();
-      pose.jointRightHandRelative.y = readFloat();
-      pose.jointRightHandRelative.z = readFloat();
+      pose.jointLeftShoulderRelative = readVector();
+      pose.jointLeftElbowRelative = readVector();
+      pose.jointLeftHandRelative = readVector();
+      
+      pose.jointRightShoulderRelative = readVector();
+      pose.jointRightElbowRelative = readVector();
+      pose.jointRightHandRelative = readVector();
 
       if (NORMALIZE_SIZE) pose.normalizeSize();
       if (move.normRotation) pose = pose.normalizeRotation();

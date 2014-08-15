@@ -39,16 +39,13 @@ class RingBuffer
         enoughFrames = true;
   }
 
-  // a new pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
-  // the ring buffer mechanism uses one pointer: startOfBuffer to determine the current start of a pose
+
   void fillBuffer(Pose newPose) {
     next();
     poseArray[startOfBuffer].copyFrom(newPose);
   }
 
 
-  // a new rotation normalized pose will be saved to the ringbuffer (containing current and previous framesInputMax-1 frames)
-  // the ring buffer mechanism uses one pointer which is set in fillBufer(), not in this routine
   void fillBufferNormalized(Pose newPose) {    
     poseNormalizedArray[startOfBuffer].copyFrom(newPose);
   }
@@ -60,6 +57,11 @@ class RingBuffer
       move.get(i).copyFrom(poseArray[(startOfBuffer + i + framesGestureMax) % framesInputMax]);
   }  
 
+  void updateCost(int moveId) {
+    costLast[moveId] = cost[moveId];
+    cost[moveId] = pathcost(moveId);
+    //cost[moveId] = (log(cost[moveId]-1.0) - 5.5)/2.0;
+  }
 
   float cost(Move move, int poseId, int thatId) {
     return cost(move, move.get(poseId), poseArray[thatId]);

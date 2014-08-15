@@ -116,10 +116,7 @@ void setup()
   for (int i = 0; i < nbrOfMoves; i++) {
     String str = Integer.toString(i); 
     f = new File(dataPath("pose" + str + ".data"));      
-    if (!f.exists())
-      for (User user : users.values ())
-        user.rb.cost[i] = 10000.0;
-    else
+    if (f.exists())
       data.loadMove(i);
   }
 
