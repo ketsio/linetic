@@ -12,7 +12,8 @@
 boolean useFullscreen = false;
 int nbrOfMoves = 11; // TODO : back to 10
 int nbrOfPerson = 2;
-
+float maxCost = 0;
+float minCost = 10000;
 
 // === variables defined by XML ===============================
 

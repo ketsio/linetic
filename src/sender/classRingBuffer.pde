@@ -60,7 +60,6 @@ class RingBuffer
   void updateCost(int moveId) {
     costLast[moveId] = cost[moveId];
     cost[moveId] = pathcost(moveId);
-    //cost[moveId] = (log(cost[moveId]-1.0) - 5.5)/2.0;
   }
 
   float cost(Move move, int poseId, int thatId) {
@@ -83,31 +82,36 @@ class RingBuffer
 
     float mse = 0.0;
 
-    mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftShoulderRelative.x - that.jointLeftShoulderRelative.x) 
-      + move.weightY * sq(pose.jointLeftShoulderRelative.y - that.jointLeftShoulderRelative.y)
-      + move.weightZ * sq(pose.jointLeftShoulderRelative.z - that.jointLeftShoulderRelative.z) );
+    mse += weight_left * dist(pose.jointLeftShoulderRelative, that.jointLeftShoulderRelative, move);
+    mse += weight_left * dist(pose.jointLeftElbowRelative, that.jointLeftElbowRelative, move);
+    mse += weight_left * dist(pose.jointLeftHandRelative, that.jointLeftHandRelative, move);
 
-    mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftElbowRelative.x - that.jointLeftElbowRelative.x)
-      + move.weightY * sq(pose.jointLeftElbowRelative.y - that.jointLeftElbowRelative.y)
-      + move.weightZ * sq(pose.jointLeftElbowRelative.z - that.jointLeftElbowRelative.z) );
+    mse += weight_right * dist(pose.jointRightShoulderRelative, that.jointRightShoulderRelative, move);
+    mse += weight_right * dist(pose.jointRightElbowRelative, that.jointRightElbowRelative, move);
+    mse += weight_right * dist(pose.jointRightHandRelative, that.jointRightHandRelative, move);
 
-    mse += weight_left * sqrt( move.weightX * sq(pose.jointLeftHandRelative.x - that.jointLeftHandRelative.x)
-      + move.weightY * sq(pose.jointLeftHandRelative.y - that.jointLeftHandRelative.y)
-      + move.weightZ * sq(pose.jointLeftHandRelative.z - that.jointLeftHandRelative.z) );
-
-    mse += weight_right * sqrt( move.weightX * sq(pose.jointRightShoulderRelative.x - that.jointRightShoulderRelative.x)
-      + move.weightY * sq(pose.jointRightShoulderRelative.y - that.jointRightShoulderRelative.y)
-      + move.weightZ * sq(pose.jointRightShoulderRelative.z - that.jointRightShoulderRelative.z) );
-
-    mse += weight_right * sqrt( move.weightX * sq(pose.jointRightElbowRelative.x - that.jointRightElbowRelative.x)
-      + move.weightY * sq(pose.jointRightElbowRelative.y - that.jointRightElbowRelative.y)
-      + move.weightZ * sq(pose.jointRightElbowRelative.z - that.jointRightElbowRelative.z) );
-
-    mse += weight_right * sqrt( move.weightX * sq(pose.jointRightHandRelative.x - that.jointRightHandRelative.x)
-      + move.weightY * sq(pose.jointRightHandRelative.y - that.jointRightHandRelative.y)
-      + move.weightZ * sq(pose.jointRightHandRelative.z - that.jointRightHandRelative.z) );
-
+    mse /= (3 * weight_left + 3 * weight_right);
+    
     return mse;
+  }
+  
+  float dist(PVector a, PVector b, Move m) {
+    float result = sq(a.x - b.x) * m.weightX;
+    result += sq(a.y - b.y) * m.weightY;
+    result += sq(a.z - b.z) * m.weightZ;
+    result /= (m.weightX + m.weightY + m.weightZ);
+    return sqrt(result);
+  }
+  
+  float getPercent(int moveId) {
+    return costToPercent(cost[moveId]);
+  }
+  
+  float costToPercent(float cost) {
+    float minC = minCost + 20;
+    float maxC = maxCost - 50;
+    float matching = 1.0 - ((cost - minC) / (maxC - minC));
+    return min(1.0, max(0.01, matching));
   }
 
 
@@ -186,11 +190,9 @@ class RingBuffer
       while (m > 0 || n > 0) 
       {
         int currentCell = P[moveId][m][n];
-        if (currentCell >= 0) max(m--, 0);
-        if (currentCell <= 0) max(n--, 0);
 
         // average speed values 
-        // speed[moveId] -=  n-0.5*framesInputMax-m;
+        // speed[moveId] -=  n-0.5*M-m;
 
         // if (m == framesGestureMax - 4) 
         //   speed[moveId] = n;
@@ -204,20 +206,29 @@ class RingBuffer
         
         if(m <= firstQuantile && endMove == -1)
           endMove = n;
-          
         if(m <= lastQuantile && beginMove == -1)
           beginMove = n;
         
         steps[moveId]++;
+        
+        // Next
+        if (currentCell >= 0) max(m--, 0);
+        if (currentCell <= 0) max(n--, 0);
       }
-      println("beginMove : " + beginMove);
-      println("endMove : " + endMove);
+      
+      // Speed calculation
       speed[moveId] = abs(endMove - beginMove);
       speed[moveId] /= framesMoveAnalyzed;
 
       // better results by normalizing by framesGestureMax instead of steps
       // cost = D[M][N]/((float) move.framesGesture);
-      cost = D[M][N]/steps[moveId];
+      // cost = D[M][N]/steps[moveId];
+      
+      cost = D[M][N]/(M+N);
+      if (cost > maxCost)
+        maxCost = cost;
+      if (cost < minCost && enoughFrames)
+        minCost = cost;
     }
 
     return cost;
@@ -251,8 +262,6 @@ class RingBuffer
         if (d[gui.displayCost][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][(framesInputMax + startOfBuffer - n) % framesInputMax] > maximum)
           maximum  = d[gui.displayCost][(framesGestureMax + framesMoveAnalyzed-1 - m) % framesGestureMax][(framesInputMax + startOfBuffer - n) % framesInputMax];
           
-    //println("maximum : " + maximum);
-
     noStroke(); 
     fill(0, 0, 0);
 
@@ -291,6 +300,10 @@ class RingBuffer
     textFont(gui.fontA12);
     fill(0);
     text("analysing gesture #" + gui.displayCost, textOrigin.x, textOrigin.y);
+    
+    //temp
+    text(" <" + maxCost + "> , <" + minCost + "> ", textOrigin.x + 100, textOrigin.y + 40);
+
 
     // find best match
     if (cost.length < 1) return;

@@ -251,27 +251,31 @@ class GUI {
     Move move = moves[moveId];
     if (move.empty)
       return;
-
-    user.rb.updateCost(moveId);
-    println("cost : " + user.rb.cost[moveId]);
-
-    float matching = 1.0 - user.rb.cost[moveId];
-
-    fill(user.c);
-    if (matching >= 0.75 )
-      fill(0, 255, 0);
-
-    if (matching < 0.75 && matching > 0.65)
-      fill(user.c, 200);
-
+    
     // Positioning
     int r = moveId / col;
     int c = moveId % col;
     PVector cellOrigin = new PVector();
     cellOrigin.x = gridOrigin.x + padding + c * (cellWidth + padding);
     cellOrigin.y = gridOrigin.y + padding + r * (cellHeight + padding);
+    
+    // Data
+    user.rb.updateCost(moveId);
+    float matching = user.rb.getPercent(moveId);
+    println("->" + matching);
+    
+    // Reset
+    fill(255); // TODO : Background color
+    rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, cellWidth, 8);
 
-    rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, min(1.0, max(0.01, matching)) * float(cellWidth), 8);
+    // Color choices
+    fill(user.c);
+    if (matching >= 0.75 )
+      fill(0, 255, 0);
+    if (matching < 0.75 && matching > 0.65)
+      fill(user.c, 200);
+
+    rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, matching * float(cellWidth), 8);
 
     if ( matching >= 0.7) // TODO : move.triggerAt
     {
