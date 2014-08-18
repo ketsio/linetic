@@ -3,8 +3,9 @@ class GUI {
   // Properties 
   boolean mirrored = false;
   boolean updateDisplay = true;
-  int displayCost = 0;
+  int highlightedMove = 0;
   int padding = 15;
+  color backgroundColor = 255;
 
   // Pages
   boolean mainPage = true;
@@ -24,7 +25,7 @@ class GUI {
 
   // Images
   PImage emptyImage;
-  PImage[][] warnings;
+  PImage[] warnings;
   PImage shapeOfUser;  
   PImage logo;
 
@@ -36,6 +37,14 @@ class GUI {
 
   public GUI() {
     this.setUp();
+  }
+  
+  public void reset() {
+    textFont(fontA32, 32);
+    background(backgroundColor);
+    stroke(0, 0, 255);
+    strokeWeight(3);
+    smooth();
   }
 
   public void setUp() {
@@ -64,11 +73,7 @@ class GUI {
     loadImages();
 
     // APPLYING SETTINGS ====================================
-    textFont(fontA32, 32);
-    background(255);
-    stroke(0, 0, 255);
-    strokeWeight(3);
-    smooth();
+    reset();
 
     pg = createGraphics(context.depthWidth(), context.depthHeight());
     //pg = createGraphics(context.depthWidth(), context.depthHeight(), P2D);
@@ -95,26 +100,21 @@ class GUI {
 
   private void drawMainPage() {
 
-    // update the cam
+    // Update the cam
     context.update();
 
-    // draw depthImageMap
+    // Draw depthImageMap
     pg.beginDraw();
     pg.image(context.depthImage(), 0, 0);
-
-    // process the skeleton if it's available
     for (User u : users.values ())
       if (context.isTrackingSkeleton(u.id))
-        evaluateSkeleton(u.id);
-
+        u.evaluateSkeleton(context);
     pg.endDraw();
 
-
-    if (!mirrored)
-    {
+    // Display depthImage
+    if (!mirrored) {
       image(pg, padding, padding);
-    } else
-    {
+    } else {
       pushMatrix();
       translate(padding, padding);
       scale(-1.0, 1.0);
@@ -122,25 +122,20 @@ class GUI {
       popMatrix();
     }
 
-    if (users.isEmpty()) 
-    {
+    // Display Indications
+    if (users.isEmpty()) {
       textFont(fontA32, 32);
       textAlign(CENTER);
       text("Please register user!", context.depthWidth() / 2, 40);
       image(shapeOfUser, 0, 0);
-    } else if ((warning[0] >= 0) || (warning[1] >= 0))
-    {
-      if ((warning[0] >= 0) && (warning[1] < 0))
-      {
-        image(warnings[0][warning[0]], context.depthWidth()/2-100, context.depthHeight()/2 - 50);
-      } else if ((warning[1] >= 0) && (warning[0] < 0))
-      {
-        image(warnings[1][warning[1]], context.depthWidth()/2-100, context.depthHeight()/2 - 50);
-      } else
-      {
-        image(warnings[0][warning[0]], context.depthWidth()/2-100-75, context.depthHeight()/2 - 50);
-        image(warnings[1][warning[1]], context.depthWidth()/2-100+75, context.depthHeight()/2 - 50);
-      }
+    } else {
+      int warning = -1;
+      for (User user : users.values())
+        if (user.warning >= 0)
+          warning = user.warning;
+          
+      if (warning >= 0)
+        image(warnings[warning], context.depthWidth()/2-100, context.depthHeight()/2 - 50);
     }
 
     // Grid of Moves
@@ -157,22 +152,21 @@ class GUI {
 
   public void switchDisplay() {
     mirrored = !mirrored;
-    context.setMirror(mirrored);
     update();
   }
 
-  public void editCost(int moveId) {
-    displayCost = moveId;
-    if (displayCost < 0) displayCost = 0;
-    if (displayCost >= nbrOfMoves) displayCost = nbrOfMoves - 1;
+  public void setHighlightedMove(int moveId) {
+    highlightedMove = moveId;
+    if (highlightedMove < 0) highlightedMove = 0;
+    if (highlightedMove >= nbrOfMoves) highlightedMove = nbrOfMoves - 1;
   }
 
-  public void prevCost() {
-    editCost(--displayCost);
+  public void prevMove() {
+    setHighlightedMove(--highlightedMove);
   }
 
-  public void nextCost() {
-    editCost(++displayCost);
+  public void nextMove() {
+    setHighlightedMove(++highlightedMove);
   }
 
 
@@ -196,7 +190,7 @@ class GUI {
       // Displaying the grid of moves (TODO : optimize offset calcul (more vars))
       int moveId;
       PVector cellOrigin = new PVector();
-      for (int r = 0; r < row; r++)
+      for (int r = 0; r < row; r++) {
         for (int c = 0; c < col; c++) {
           moveId = r * col + c;
           if (moveId < nbrOfMoves) {
@@ -205,27 +199,19 @@ class GUI {
             drawCell(cellOrigin, moveId);
           }
         }
+      }
     }
 
     // evaluate and draw DTW
-    if (highlightedUser != null) {
-
-      noStroke();             
-      fill(0, 0, 0);
-
+    if (highlightedUser != null)
       for (int i = 0; i < nbrOfMoves; i++)
         drawMatchingBar(highlightedUser, i);
-    }
+   
     //    if (!users.isEmpty())
-    //    {
-    //
-    //      noStroke();             
-    //      fill(0, 0, 0);
-    //
     //      for (User user : users.values ()) 
     //        for (int i = 0; i < nbrOfMoves; i++)
     //          drawMatchingBar(user, i);
-    //    }
+    
   }
 
   private void drawCell(PVector cellOrigin, int moveId) {
@@ -265,7 +251,8 @@ class GUI {
     println("->" + matching);
     
     // Reset
-    fill(255); // TODO : Background color
+    noStroke();
+    fill(backgroundColor);
     rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, cellWidth, 8);
 
     // Color choices
@@ -277,8 +264,7 @@ class GUI {
 
     rect(cellOrigin.x, cellOrigin.y + cellHeight + 2, matching * float(cellWidth), 8);
 
-    if ( matching >= 0.7) // TODO : move.triggerAt
-    {
+    if ( matching >= move.triggerAt) {
       println("found gesture #" + moveId + " user : " + user.name);
       server.send(move, user);
     }
@@ -286,38 +272,20 @@ class GUI {
 
   private void loadImages() {
 
-    warnings = new PImage[2][8];
-    warnings[0][0] = loadImage(dataPath("go_left_red.png"));    
-    warnings[0][1] = loadImage(dataPath("go_lf_red.png"));
-    warnings[0][2] = loadImage(dataPath("go_front_red.png"));
-    warnings[0][3] = loadImage(dataPath("go_rf_red.png"));
-    warnings[0][4] = loadImage(dataPath("go_right_red.png"));
-    warnings[0][5] = loadImage(dataPath("go_rb_red.png"));
-    warnings[0][6] = loadImage(dataPath("go_back_red.png"));
-    warnings[0][7] = loadImage(dataPath("go_lb_red.png"));
-    warnings[1][0] = loadImage(dataPath("go_left_blue.png"));    
-    warnings[1][1] = loadImage(dataPath("go_lf_blue.png"));
-    warnings[1][2] = loadImage(dataPath("go_front_blue.png"));
-    warnings[1][3] = loadImage(dataPath("go_rf_blue.png"));
-    warnings[1][4] = loadImage(dataPath("go_right_blue.png"));
-    warnings[1][5] = loadImage(dataPath("go_rb_blue.png"));
-    warnings[1][6] = loadImage(dataPath("go_back_blue.png"));
-    warnings[1][7] = loadImage(dataPath("go_lb_blue.png"));
+    warnings = new PImage[8];
+    warnings[0] = loadImage(dataPath("go_left_red.png"));    
+    warnings[1] = loadImage(dataPath("go_lf_red.png"));
+    warnings[2] = loadImage(dataPath("go_front_red.png"));
+    warnings[3] = loadImage(dataPath("go_rf_red.png"));
+    warnings[4] = loadImage(dataPath("go_right_red.png"));
+    warnings[5] = loadImage(dataPath("go_rb_red.png"));
+    warnings[6] = loadImage(dataPath("go_back_red.png"));
+    warnings[7] = loadImage(dataPath("go_lb_red.png"));
 
     shapeOfUser = loadImage(dataPath("shape.png"));  
     logo = loadImage(dataPath("kinetic_space.png"));
     emptyImage = loadImage(dataPath("empty.png"));
 
-    for (int i = 0; i < nbrOfMoves; i++) {
-      String str = Integer.toString(i);
-      Move move = moves[i];
-
-      File f = new File(dataPath("pose" + str + ".png"));
-      if (!f.exists()) 
-        move.empty = true;
-      else
-        move.image = loadImage(dataPath("pose" + str + ".png"));
-    }
   }
 }
 

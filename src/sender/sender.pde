@@ -1,5 +1,5 @@
 /* --------------------------------------------------------------------------
- * Move Tracker - gesture recognition engine 
+ * Linetic Sender - gesture recognition engine 
  * --------------------------------------------------------------------------
  * prog:  Loris Leiva
  * date:  10/08/2014 (m/d/y)
@@ -44,6 +44,8 @@ import oscP5.*;
 import netP5.*;
 import java.util.Map;
 import java.util.List;
+import java.text.Normalizer;
+import java.util.Locale;
 // import processing.opengl.*;
 
 
@@ -52,26 +54,20 @@ import java.util.List;
 SimpleOpenNI context;
 int framesInputMax = 2*framesGestureMax;
 
-int counter = 0;
 int counterEvent = 0;
 
 // Relative Array of objects
-Pose[][] grid;
 Move[] moves;
 Map<Integer, User> users;
 User highlightedUser = null;
 
-
 int steps[];
 float speed[];
 PGraphics pg;
-int warning[];
 
 Data data;
 Server server;
 GUI gui;
-
-
 
 
 
@@ -88,44 +84,29 @@ void setup()
   // Arrays instanciations
   steps = new int[nbrOfMoves];
   speed = new float[nbrOfMoves];
-  warning = new int[nbrOfPerson];
   moves = new Move[nbrOfMoves];
-
   for (int i = 0; i < nbrOfMoves; i++)
-    moves[i] = new Move();
+    moves[i] = new Move(i);
 
-  // parse XML setup file
+  // Parse XML setup file
   parseXML();
 
+  // Load Kinect
   if (useMultiThreading)
     context = new SimpleOpenNI(this, SimpleOpenNI.RUN_MODE_MULTI_THREADED); 
   else
     context = new SimpleOpenNI(this);
-  if (context.isInit() == false)
-  {
+  if (context.isInit() == false) {
     println("Can't init SimpleOpenNI, maybe the camera is not connected!"); 
     exit();
     return;
   }
 
-  grid = new Pose[framesInputMax][framesGestureMax];
-  for (int i = 0; i < framesInputMax; i++)
-    for (int j = 0; j < framesGestureMax; j++)
-      grid[i][j] = new Pose();
+  // Load existing moves
+  for (int i = 0; i < nbrOfMoves; i++)
+    moves[i].load();
 
-  File f;
-  for (int i = 0; i < nbrOfMoves; i++) {
-    String str = Integer.toString(i); 
-    f = new File(dataPath("pose" + str + ".data"));      
-    if (f.exists())
-      data.loadMove(i);
-  }
-
-  // Warnings
-  warning[0] = -1;
-  warning[1] = -1;
-
-  // enable depthMap generation & skeleton for particular joints
+  // Enable depthMap generation & skeleton for particular joints
   context.enableDepth();
   context.enableUser();
 
@@ -139,16 +120,6 @@ void draw()
   gui.drawMainPage();
 }
 
-// draw the skeleton with the selected joints
-void evaluateSkeleton(int userId)
-{
-  // capture and draw
-  Pose pose = (new Pose()).capture(context, userId);
-  if (NORMALIZE_SIZE) pose.normalizeSize();
-
-  // add to the buffer
-  users.get(userId).fillBuffer(pose);
-}
 
 // -----------------------------------------------------------------
 // SimpleOpenNI events
@@ -209,14 +180,7 @@ void keyPressed()
     int keyIndex = key-'0';
 
     println("POSE " + keyIndex + " SAVED");
-    Move move = moves[keyIndex];
-    highlightedUser.saveMyMove(move);
-
-    String str = Integer.toString(keyIndex);
-    pg.save(dataPath("pose" + str + ".png")); 
-    data.saveMove(keyIndex);
-    move.image = loadImage(dataPath("pose" + str + ".png"));
-    move.empty = false;
+    moves[keyIndex].capture();
     gui.update();
   }
 
@@ -227,11 +191,11 @@ void keyPressed()
     break; 
 
   case '+':
-    gui.nextCost();
+    gui.nextMove();
     break;
 
   case '-':
-    gui.prevCost();
+    gui.prevMove();
     break;
 
   case 'd':

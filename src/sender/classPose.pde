@@ -21,7 +21,7 @@ class Pose
     jointRightHandRelative = that.jointRightHandRelative.get();
   }
 
-  public Pose capture(SimpleOpenNI kinect, int userId) {
+  public Pose capture(SimpleOpenNI kinect, User user) {
 
     Pose pose = new Pose();
 
@@ -41,14 +41,14 @@ class Pose
     PVector jointRightElbow2D = new PVector();
     PVector jointRightHand2D = new PVector();
 
-    // get the joint positions
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_NECK, jointNeck3D);  
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_SHOULDER, jointLeftShoulder3D);
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_ELBOW, jointLeftElbow3D);
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_LEFT_HAND, jointLeftHand3D);
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_SHOULDER, jointRightShoulder3D);
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_ELBOW, jointRightElbow3D);
-    kinect.getJointPositionSkeleton(userId, SimpleOpenNI.SKEL_RIGHT_HAND, jointRightHand3D);
+    // Get the joint positions
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_NECK, jointNeck3D);  
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_LEFT_SHOULDER, jointLeftShoulder3D);
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_LEFT_ELBOW, jointLeftElbow3D);
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_LEFT_HAND, jointLeftHand3D);
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_RIGHT_SHOULDER, jointRightShoulder3D);
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_RIGHT_ELBOW, jointRightElbow3D);
+    kinect.getJointPositionSkeleton(user.id, SimpleOpenNI.SKEL_RIGHT_HAND, jointRightHand3D);
 
     kinect.convertRealWorldToProjective(jointNeck3D, jointNeck2D);
     kinect.convertRealWorldToProjective(jointLeftShoulder3D, jointLeftShoulder2D);
@@ -58,7 +58,7 @@ class Pose
     kinect.convertRealWorldToProjective(jointRightElbow3D, jointRightElbow2D);
     kinect.convertRealWorldToProjective(jointRightHand3D, jointRightHand2D);
 
-    // calculate relative position  
+    // Calculate relative position  
     pose.jointLeftShoulderRelative = PVector.sub(jointLeftShoulder3D, jointNeck3D);
     pose.jointLeftElbowRelative = PVector.sub(jointLeftElbow3D, jointNeck3D);
     pose.jointLeftHandRelative = PVector.sub(jointLeftHand3D, jointNeck3D);
@@ -66,8 +66,8 @@ class Pose
     pose.jointRightElbowRelative = PVector.sub(jointRightElbow3D, jointNeck3D);
     pose.jointRightHandRelative = PVector.sub(jointRightHand3D, jointNeck3D);
 
-    // Drawing
-    pg.stroke(users.get(userId).c);
+    // Draw
+    pg.stroke(user.c);
     pg.strokeWeight(5);
     
     pg.line(jointNeck2D.x, jointNeck2D.y, jointLeftShoulder2D.x, jointLeftShoulder2D.y);
@@ -78,32 +78,7 @@ class Pose
     pg.line(jointRightElbow2D.x, jointRightElbow2D.y, jointRightHand2D.x, jointRightHand2D.y);
 
     // Warnings
-    warning[userId] = -1; 
-    textAlign(CENTER);
-    textFont(gui.fontA32, 32);
-    fill(255, 0, 0);
-
-    if (jointNeck2D.x < 100) 
-      warning[userId] = 0;
-
-    if (jointNeck2D.x > 540) 
-      warning[userId] = 4;
-
-    if (jointNeck3D.z > 4000) {
-      warning[userId] = 2;
-      if (jointNeck2D.x < 100)
-        warning[userId] = 1;
-      if (jointNeck2D.x > 540)
-        warning[userId] = 3;
-    }
-
-    if (jointNeck2D.z < 1500) {
-      warning[userId] = 6;
-      if (jointNeck2D.x < 100) 
-        warning[userId] = 7;
-      if (jointNeck2D.x > 540)
-        warning[userId] = 5;
-    }
+    user.updateWarning(jointNeck2D, jointNeck3D);
 
     return pose;
   }

@@ -4,12 +4,10 @@ void parseXML()
 {
 
   File f = new File(dataPath("setup.xml"));
-  if (!f.exists()) 
-  {  
+  if (!f.exists()) {  
     println("File " + dataPath("setup.xml") + " does not exist");
     return;
   } 
-  println("File " + dataPath("setup.xml") + " does exist");
   XML root = loadXML(dataPath("setup.xml"));
 
   // AUTODETECTION
@@ -154,5 +152,21 @@ User getRandomUser() {
     return null;
   List<User> currentUsers = new ArrayList<User>(users.values());
   return currentUsers.get(int(random(currentUsers.size())));
+}
+
+public String slugify(String input) {
+  if (input == null)
+    return "";
+
+  String slug = input.trim();
+  slug = Normalizer.normalize(slug, Normalizer.Form.NFD)
+    .replaceAll("[^\\p{ASCII}]", "")
+    .replaceAll("[^\\w+]", "-")
+    .replaceAll("\\s+", "-")
+    .replaceAll("[-]+", "-")
+    .replaceAll("^-", "")
+    .replaceAll("-$", "");
+
+  return slug.toLowerCase(Locale.ENGLISH);
 }
 

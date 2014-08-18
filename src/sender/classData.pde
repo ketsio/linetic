@@ -3,11 +3,16 @@ class Data {
   String filename, data[];
   int datalineId;
 
-  // begin data saving
+
+    ////////////
+   // SAVING //
+  ////////////
+
   void beginSave() {
     datalist=new ArrayList();
   }
 
+  // Add
   void add(String s) {
     datalist.add(s);
   }
@@ -23,11 +28,21 @@ class Data {
   void add(boolean val) {
     datalist.add(""+val);
   }
-  
+
   void add(PVector val) {
-    datalist.add(""+val.x);
-    datalist.add(""+val.y);
-    datalist.add(""+val.z);
+    datalist.add(val.x);
+    datalist.add(val.y);
+    datalist.add(val.z);
+  }
+
+  void add(Pose pose) {
+    add(pose.jointLeftShoulderRelative);
+    add(pose.jointLeftElbowRelative);
+    add(pose.jointLeftHandRelative);
+
+    add(pose.jointRightShoulderRelative);
+    add(pose.jointRightElbowRelative);
+    add(pose.jointRightHandRelative);
   }
 
   void endSave(String _filename) {
@@ -40,6 +55,11 @@ class Data {
     println("Saved data to '"+filename+"', "+data.length+" lines.");
   }
 
+
+    /////////////
+   // LOADING //
+  /////////////
+
   void load(String _filename) {
     filename=_filename;
 
@@ -48,10 +68,22 @@ class Data {
     println("Loaded data from '"+filename+"', "+data.length+" lines.");
   }
 
+  Pose readPose() {
+    Pose pose = new Pose();
+    pose.jointLeftShoulderRelative = readVector();
+    pose.jointLeftElbowRelative = readVector();
+    pose.jointLeftHandRelative = readVector();
+
+    pose.jointRightShoulderRelative = readVector();
+    pose.jointRightElbowRelative = readVector();
+    pose.jointRightHandRelative = readVector();
+    return pose;
+  }
+
   PVector readVector() {
     return new PVector(readFloat(), readFloat(), readFloat());
   }
-  
+
   float readFloat() {
     return float(data[datalineId++]);
   }
@@ -66,51 +98,6 @@ class Data {
 
   String readString() {
     return data[datalineId++];
-  }
-  
-  void saveMove(int moveId) { 
-    beginSave();
-    Move move = moves[moveId];
-    Pose pose;
-    for (int i = 1; i < framesGestureMax; i++)
-    {
-      pose = move.get(i);
-      add(pose.jointLeftShoulderRelative);
-      add(pose.jointLeftElbowRelative);
-      add(pose.jointLeftHandRelative);
-
-      add(pose.jointRightShoulderRelative);
-      add(pose.jointRightElbowRelative);
-      add(pose.jointRightHandRelative);
-    }
-
-    // Saving
-    String str = Integer.toString(moveId);    
-    endSave(dataPath("pose" + str + ".data"));
-  }
-
-  void loadMove(int moveId) {
-    // Loading
-    String str = Integer.toString(moveId);
-    load(dataPath("pose" + str + ".data"));
-
-    Move move = moves[moveId];
-    Pose pose;
-    for (int i = 1; i < framesGestureMax; i++)
-    {
-      pose = move.get(i);
-      pose.jointLeftShoulderRelative = readVector();
-      pose.jointLeftElbowRelative = readVector();
-      pose.jointLeftHandRelative = readVector();
-      
-      pose.jointRightShoulderRelative = readVector();
-      pose.jointRightElbowRelative = readVector();
-      pose.jointRightHandRelative = readVector();
-
-      if (NORMALIZE_SIZE) pose.normalizeSize();
-      if (move.normRotation) pose = pose.normalizeRotation();
-    }
-    move.empty = false;
   }
 }
 
