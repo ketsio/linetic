@@ -66,6 +66,7 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightShoulder3D = new PVector();
 	    PVector jointRightElbow3D = new PVector();
 	    PVector jointRightHand3D = new PVector();
+	    PVector jointTorso3D = new PVector();
 
 	    PVector jointHead2D = new PVector();  
 	    PVector jointNeck2D = new PVector();  
@@ -75,6 +76,7 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightShoulder2D = new PVector();
 	    PVector jointRightElbow2D = new PVector();
 	    PVector jointRightHand2D = new PVector();
+	    PVector jointTorso2D = new PVector();
 
 	    // Get the joint positions
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_HEAD, jointHead3D);  
@@ -85,6 +87,7 @@ public class Kinect implements CameraInterface {
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_ELBOW, jointRightElbow3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_HAND, jointLeftHand3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_HAND, jointRightHand3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_TORSO, jointTorso3D);
 
 	    kinect.convertRealWorldToProjective(jointHead3D, jointHead2D);
 	    kinect.convertRealWorldToProjective(jointNeck3D, jointNeck2D);
@@ -94,6 +97,7 @@ public class Kinect implements CameraInterface {
 	    kinect.convertRealWorldToProjective(jointRightShoulder3D, jointRightShoulder2D);
 	    kinect.convertRealWorldToProjective(jointRightElbow3D, jointRightElbow2D);
 	    kinect.convertRealWorldToProjective(jointRightHand3D, jointRightHand2D);
+	    kinect.convertRealWorldToProjective(jointTorso3D, jointTorso2D);
 
 	    // Set the new pose with those joints  
 	    pose.setJoint(JointType.NECK, new Joint(jointNeck3D));
@@ -103,21 +107,22 @@ public class Kinect implements CameraInterface {
 	    pose.setJoint(JointType.ELBOW_RIGHT, new Joint(jointRightElbow3D));
 	    pose.setJoint(JointType.HAND_LEFT, new Joint(jointLeftHand3D));
 	    pose.setJoint(JointType.HAND_RIGHT, new Joint(jointRightHand3D));
+	    pose.setJoint(JointType.TORSO, new Joint(jointTorso3D));
 
 	    // Draw
 	    pg.beginDraw();
 	    pg.stroke(user.getColor());
 	    pg.strokeWeight(5);
 
-	    pg.line(jointHead2D.x, jointHead2D.y, jointNeck2D.x, jointNeck2D.y);
+	    drawLine(jointHead2D, jointNeck2D);
+	    drawLine(jointNeck2D, jointLeftShoulder2D);
+	    drawLine(jointLeftShoulder2D, jointLeftElbow2D);
+	    drawLine(jointLeftElbow2D, jointLeftHand2D);  
+	    drawLine(jointNeck2D, jointRightShoulder2D);
+	    drawLine(jointRightShoulder2D, jointRightElbow2D);
+	    drawLine(jointRightElbow2D, jointRightHand2D);
+	    drawLine(jointNeck2D, jointTorso2D);
 	    
-	    pg.line(jointNeck2D.x, jointNeck2D.y, jointLeftShoulder2D.x, jointLeftShoulder2D.y);
-	    pg.line(jointLeftShoulder2D.x, jointLeftShoulder2D.y, jointLeftElbow2D.x, jointLeftElbow2D.y);
-	    pg.line(jointLeftElbow2D.x, jointLeftElbow2D.y, jointLeftHand2D.x, jointLeftHand2D.y);  
-	    
-	    pg.line(jointNeck2D.x, jointNeck2D.y, jointRightShoulder2D.x, jointRightShoulder2D.y);
-	    pg.line(jointRightShoulder2D.x, jointRightShoulder2D.y, jointRightElbow2D.x, jointRightElbow2D.y);
-	    pg.line(jointRightElbow2D.x, jointRightElbow2D.y, jointRightHand2D.x, jointRightHand2D.y);
 	    pg.endDraw();
 
 	    // Warnings
@@ -134,6 +139,10 @@ public class Kinect implements CameraInterface {
 	@Override
 	public boolean isConnected() {
 		return true;
+	}
+	
+	private void drawLine(PVector a, PVector b) {
+		pg.line(a.x, a.y, b.x, b.y);
 	}
 
 }

@@ -10,7 +10,7 @@ import ch.linetic.gesture.PoseInterface.JointType;
 public final class SpeedAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
-	public final static float MAX_VALUE = 100; // TODO PK ? (0,...)
+	public final static float MAX_VALUE = 100; // TODO PK ? (INF)
 
 	public SpeedAnalyzer(int index, String name) {
 		super(index, name);
@@ -24,29 +24,20 @@ public final class SpeedAnalyzer extends Analyzer {
 		
 		float accumulator = 0;
 		for (Collection<Joint> joints : movement.getMovements()) {
-			accumulator += distancePerFrameForJointAVG(joints);
+			accumulator += operationPerFrameAVG(joints);
 		}
 		accumulator /= JointType.values().length;
 		return accumulator;
 	}
 
+	@Override
 	protected float rescale(float x) {
 		return rescale(x, MIN_VALUE, MAX_VALUE);
 	}
 	
-	private float distancePerFrameForJointAVG(Collection<Joint> joints) {
-		assert joints.size() > 1 : "Must have at least two joints to average the speed";
-		
-		float accumulator = 0;
-		Joint previousJoint = null;
-		
-		for (Joint joint : joints) {
-			if (previousJoint != null) {
-				accumulator += previousJoint.dist(joint);
-			}
-			previousJoint = joint;
-		}
-		return accumulator / (joints.size() - 1);
+	@Override
+	protected float operationPerFrame(Joint a, Joint b) {
+		return a.dist(b);
 	}
 
 }

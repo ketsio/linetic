@@ -24,7 +24,7 @@ public final class ShakinessAnalyzer extends Analyzer {
 		
 		float accumulator = 0;
 		for (Collection<Joint> joints : movement.getMovements()) {
-			accumulator += anglePerFrameForJointAVG(joints);
+			accumulator += operationPerFrameAVG(joints);
 		}
 		accumulator /= JointType.values().length;
 		return accumulator;
@@ -35,19 +35,9 @@ public final class ShakinessAnalyzer extends Analyzer {
 		return rescale(x, MIN_VALUE, MAX_VALUE);
 	}
 	
-	private float anglePerFrameForJointAVG(Collection<Joint> joints) {
-		assert joints.size() > 1 : "Must have at least two joints to average the shakiness";
-		
-		float accumulator = 0;
-		Joint previousJoint = null;
-		
-		for (Joint joint : joints) {
-			if (previousJoint != null) {
-				accumulator += previousJoint.angle(joint);
-			}
-			previousJoint = joint;
-		}
-		return accumulator / (joints.size() - 1);
+	@Override
+	protected float operationPerFrame(Joint a, Joint b) {
+		return a.angle(b);
 	}
 
 }

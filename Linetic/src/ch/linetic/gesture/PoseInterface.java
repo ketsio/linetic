@@ -3,13 +3,15 @@ package ch.linetic.gesture;
 public interface PoseInterface {
 	
 	public enum JointType {
-		NECK(0),
-		SHOULDER_LEFT(1),
-		SHOULDER_RIGHT(2),
-		ELBOW_LEFT(3),
-		ELBOW_RIGHT(4),
-		HAND_LEFT(5),
-		HAND_RIGHT(6);
+		HEAD(0),
+		NECK(1),
+		SHOULDER_LEFT(2),
+		SHOULDER_RIGHT(3),
+		ELBOW_LEFT(4),
+		ELBOW_RIGHT(5),
+		HAND_LEFT(6),
+		HAND_RIGHT(7),
+		TORSO(8);
 		
 		int index = 0;
 		
