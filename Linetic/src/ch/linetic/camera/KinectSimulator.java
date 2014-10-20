@@ -16,6 +16,9 @@ public class KinectSimulator implements CameraInterface {
 	private static final Random rand = new Random();
 	private PGraphics pg;
 	
+	private PoseInterface simulatedPose;
+	private final static int range = 10;
+	
 	public KinectSimulator(PApplet parrent) {
 		this.pg = parrent.createGraphics(640, 480);
 		pg.beginDraw();
@@ -24,10 +27,13 @@ public class KinectSimulator implements CameraInterface {
 		pg.color(255);
 		pg.text("Kinect Simulator", pg.width / 2, pg.height / 2);
 		pg.endDraw();
+		
+		this.simulatedPose = randomPose();
 	}
-	
+
 	@Override
 	public void update() {
+		updatePose();
 	}
 
 	@Override
@@ -37,7 +43,7 @@ public class KinectSimulator implements CameraInterface {
 
 	@Override
 	public PoseInterface capture(UserInterface user) {
-		return randomPose();
+		return simulatedPose;
 	}
 
 	@Override
@@ -48,16 +54,32 @@ public class KinectSimulator implements CameraInterface {
 	
 	// RANDOM
 	
-	private PoseInterface randomPose() {
+	
+	private PoseInterface updatePose() {
 		PoseInterface pose = new Pose();
 		for (JointType jointType : JointType.values()) {
-			pose.setJoint(jointType, randomJoint());
+			updateJoint(jointType);
 		}
 		return pose;
 	}
 	
-	private Joint randomJoint() {
-		return new Joint(rand.nextInt(300),rand.nextInt(300),rand.nextInt(300));
+	private void updateJoint(JointType jointType) {
+		Joint nextJoint = simulatedPose.getJoint(jointType).add(new Joint(
+			rand.nextInt(range+1)-(range/2),
+			rand.nextInt(range+1)-(range/2),
+			rand.nextInt(range+1)-(range/2)));
+		simulatedPose.setJoint(jointType, nextJoint);
+	}
+	
+	private PoseInterface randomPose() {
+		PoseInterface pose = new Pose();
+		for (JointType jointType : JointType.values()) {
+			pose.setJoint(jointType, new Joint(
+				rand.nextInt(range),
+				rand.nextInt(range),
+				rand.nextInt(range)));
+		}
+		return pose;
 	}
 
 }

@@ -29,6 +29,7 @@ public class Kinect implements CameraInterface {
 		// Enable depthMap generation & skeleton for particular joints
 		k.enableDepth();
 		k.enableUser();
+		//k.enableRGB();
 
 		return new Kinect(parrent, k);
 	}
@@ -57,6 +58,7 @@ public class Kinect implements CameraInterface {
 
 	    Pose pose = new Pose();
 
+	    PVector jointHead3D = new PVector();
 	    PVector jointNeck3D = new PVector();
 	    PVector jointLeftShoulder3D = new PVector();
 	    PVector jointLeftElbow3D = new PVector();
@@ -65,6 +67,7 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightElbow3D = new PVector();
 	    PVector jointRightHand3D = new PVector();
 
+	    PVector jointHead2D = new PVector();  
 	    PVector jointNeck2D = new PVector();  
 	    PVector jointLeftShoulder2D = new PVector();
 	    PVector jointLeftElbow2D = new PVector();
@@ -74,6 +77,7 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightHand2D = new PVector();
 
 	    // Get the joint positions
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_HEAD, jointHead3D);  
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_NECK, jointNeck3D);  
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_SHOULDER, jointLeftShoulder3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_SHOULDER, jointRightShoulder3D);
@@ -82,6 +86,7 @@ public class Kinect implements CameraInterface {
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_HAND, jointLeftHand3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_HAND, jointRightHand3D);
 
+	    kinect.convertRealWorldToProjective(jointHead3D, jointHead2D);
 	    kinect.convertRealWorldToProjective(jointNeck3D, jointNeck2D);
 	    kinect.convertRealWorldToProjective(jointLeftShoulder3D, jointLeftShoulder2D);
 	    kinect.convertRealWorldToProjective(jointLeftElbow3D, jointLeftElbow2D);
@@ -103,10 +108,13 @@ public class Kinect implements CameraInterface {
 	    pg.beginDraw();
 	    pg.stroke(user.getColor());
 	    pg.strokeWeight(5);
+
+	    pg.line(jointHead2D.x, jointHead2D.y, jointNeck2D.x, jointNeck2D.y);
 	    
 	    pg.line(jointNeck2D.x, jointNeck2D.y, jointLeftShoulder2D.x, jointLeftShoulder2D.y);
 	    pg.line(jointLeftShoulder2D.x, jointLeftShoulder2D.y, jointLeftElbow2D.x, jointLeftElbow2D.y);
 	    pg.line(jointLeftElbow2D.x, jointLeftElbow2D.y, jointLeftHand2D.x, jointLeftHand2D.y);  
+	    
 	    pg.line(jointNeck2D.x, jointNeck2D.y, jointRightShoulder2D.x, jointRightShoulder2D.y);
 	    pg.line(jointRightShoulder2D.x, jointRightShoulder2D.y, jointRightElbow2D.x, jointRightElbow2D.y);
 	    pg.line(jointRightElbow2D.x, jointRightElbow2D.y, jointRightHand2D.x, jointRightHand2D.y);

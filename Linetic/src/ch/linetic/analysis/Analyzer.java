@@ -17,8 +17,9 @@ public abstract class Analyzer implements AnalyzerInterface {
 	
 	public final static AnalyzerInterface SPEED = new SpeedAnalyzer(0,"Speed");
 	public final static AnalyzerInterface SHAKINESS = new ShakinessAnalyzer(1,"Shakiness");
+	public final static AnalyzerInterface HAND_SHAKINESS = new HandShakinessAnalyzer(2, "Hand Shakiness");
 	
-	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED, SHAKINESS);
+	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED, SHAKINESS, HAND_SHAKINESS);
 
 	
 	//-------------//

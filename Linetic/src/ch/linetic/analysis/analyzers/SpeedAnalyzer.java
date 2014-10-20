@@ -9,8 +9,8 @@ import ch.linetic.gesture.PoseInterface.JointType;
 
 public final class SpeedAnalyzer extends Analyzer {
 
-	public final static float MIN_VALUE = 50;
-	public final static float MAX_VALUE = 250;
+	public final static float MIN_VALUE = 0;
+	public final static float MAX_VALUE = 100; // TODO PK ? (0,...)
 
 	public SpeedAnalyzer(int index, String name) {
 		super(index, name);

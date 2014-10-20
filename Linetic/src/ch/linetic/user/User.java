@@ -2,6 +2,7 @@ package ch.linetic.user;
 
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.RingBuffer;
+import ch.linetic.gui.Color;
 
 public class User implements UserInterface {
 	
@@ -12,7 +13,7 @@ public class User implements UserInterface {
 	public User(int id) {
 		this.movement = new RingBuffer();
 		this.id = id;
-		this.color = 0xFF0000;
+		this.color = Color.SHADE_A;
 	}
 
 	@Override

@@ -20,10 +20,17 @@ public class Joint {
 		this.z = vector.z;
 	}
 
-	public Joint(int x, int y, int z) {
+	public Joint(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
+	}
+
+	public Joint add(Joint that) {
+		return new Joint(
+				this.x + that.x,
+				this.y + that.y,
+				this.z + that.z);
 	}
 
 	public float dist(Joint that) {

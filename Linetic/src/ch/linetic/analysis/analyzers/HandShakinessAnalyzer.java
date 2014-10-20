@@ -1,5 +1,6 @@
 package ch.linetic.analysis.analyzers;
 
+import java.util.ArrayList;
 import java.util.Collection;
 
 import ch.linetic.analysis.Analyzer;
@@ -7,12 +8,12 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
-public final class ShakinessAnalyzer extends Analyzer {
+public class HandShakinessAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
-	public final static float MAX_VALUE = 1; // TODO PK ? (180)
+	public final static float MAX_VALUE = 1; // TODO PK?
 
-	public ShakinessAnalyzer(int index, String name) {
+	public HandShakinessAnalyzer(int index, String name) {
 		super(index, name);
 	}
 
@@ -23,7 +24,11 @@ public final class ShakinessAnalyzer extends Analyzer {
 		}
 		
 		float accumulator = 0;
-		for (Collection<Joint> joints : movement.getMovements()) {
+		Collection<Collection<Joint>> jointMovements = new ArrayList<>(2);
+		jointMovements.add(movement.getJointMovement(JointType.HAND_LEFT));
+		jointMovements.add(movement.getJointMovement(JointType.HAND_RIGHT));
+		
+		for (Collection<Joint> joints : jointMovements) {
 			accumulator += anglePerFrameForJointAVG(joints);
 		}
 		accumulator /= JointType.values().length;
