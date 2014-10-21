@@ -11,9 +11,10 @@ public class HandsProximityAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 200;
 	public final static float MAX_VALUE = 0;
+	public final static int NBR_LAST_POSES = 5;
 
-	public HandsProximityAnalyzer(int index, String name) {
-		super(index, name);
+	public HandsProximityAnalyzer(int index) {
+		super(index, MIN_VALUE, MAX_VALUE);
 	}
 
 	@Override
@@ -24,19 +25,18 @@ public class HandsProximityAnalyzer extends Analyzer {
 		
 		float accumulator = 0;
 		
-		Iterator<Joint> leftH = movement.getJointMovement(JointType.HAND_LEFT, 5).iterator();
-		Iterator<Joint> rightH = movement.getJointMovement(JointType.HAND_RIGHT, 5).iterator();
+		Iterator<Joint> leftH = movement.getJointMovement(JointType.HAND_LEFT, NBR_LAST_POSES).iterator();
+		Iterator<Joint> rightH = movement.getJointMovement(JointType.HAND_RIGHT, NBR_LAST_POSES).iterator();
 		
 		while(leftH.hasNext() && rightH.hasNext()) {
 			accumulator += leftH.next().dist(rightH.next());
 		}
-		accumulator /= movement.size();
+		accumulator /= NBR_LAST_POSES;
 		return accumulator;
 	}
 
 	@Override
-	protected float rescale(float x) {
-		return rescale(x, MIN_VALUE, MAX_VALUE);
+	public String name() {
+		return "Hands Proximity";
 	}
-
 }

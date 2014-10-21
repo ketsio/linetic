@@ -13,8 +13,8 @@ public class HandShakinessAnalyzer extends Analyzer {
 	public final static float MIN_VALUE = 0;
 	public final static float MAX_VALUE = 1; // TODO PK ? (180)
 
-	public HandShakinessAnalyzer(int index, String name) {
-		super(index, name);
+	public HandShakinessAnalyzer(int index) {
+		super(index, MIN_VALUE, MAX_VALUE);
 	}
 
 	@Override
@@ -34,15 +34,14 @@ public class HandShakinessAnalyzer extends Analyzer {
 		accumulator /= JointType.values().length;
 		return accumulator;
 	}
-
-	@Override
-	protected float rescale(float x) {
-		return rescale(x, MIN_VALUE, MAX_VALUE);
-	}
 	
 	@Override
 	protected float operationPerFrame(Joint a, Joint b) {
 		return a.angle(b);
 	}
 
+	@Override
+	public String name() {
+		return "Hand Shakiness";
+	}
 }

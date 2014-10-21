@@ -11,16 +11,17 @@ import ch.linetic.gesture.MovementInterface;
 public abstract class Analyzer implements AnalyzerInterface {
 
 	private final int index;
-	private final String name;
+	private float minValue;
+	private float maxValue;
 	
 	//---------------//
 	//---Analyzers---//
 	//---------------//
 	
-	public final static AnalyzerInterface SPEED = new SpeedAnalyzer(0,"Speed");
-	public final static AnalyzerInterface SHAKINESS = new ShakinessAnalyzer(1,"Shakiness");
-	public final static AnalyzerInterface HAND_SHAKINESS = new HandShakinessAnalyzer(2, "Hand Shakiness");
-	public final static AnalyzerInterface HANDS_PROXIMITY = new HandsProximityAnalyzer(3, "Hands Proximity");
+	public final static AnalyzerInterface SPEED = new SpeedAnalyzer(0);
+	public final static AnalyzerInterface SHAKINESS = new ShakinessAnalyzer(1);
+	public final static AnalyzerInterface HAND_SHAKINESS = new HandShakinessAnalyzer(2);
+	public final static AnalyzerInterface HANDS_PROXIMITY = new HandsProximityAnalyzer(3);
 	
 	public final static List<AnalyzerInterface> ALL = Arrays.asList(
 			SPEED, SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY);
@@ -30,9 +31,10 @@ public abstract class Analyzer implements AnalyzerInterface {
 	//-------------//
 	//-------------//
 	
-	protected Analyzer(int index, String name) {
+	protected Analyzer(int index, float minValue, float maxValue) {
 		this.index = index;
-		this.name = name;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
 	}
 	
 	@Override
@@ -42,18 +44,17 @@ public abstract class Analyzer implements AnalyzerInterface {
 	
 	@Override
 	public float analyze(MovementInterface movement, boolean rescaled) {
+		if (movement.size() < 1) {
+			return 0;
+		}
 		return rescaled ? rescale(compute(movement)) : compute(movement);
 	}
 	
 	protected abstract float compute(MovementInterface movement);
-	protected abstract float rescale(float x);
 
 	//-------------//
 	//---Getters---//
 	//-------------//
-	
-	@Override
-	public String name() { return this.name; }
 	
 	/** @return (int) : The index of the analyzer */
 	public int index() { return this.index; }
@@ -63,9 +64,9 @@ public abstract class Analyzer implements AnalyzerInterface {
 	//---Helpers---//
 	//-------------//
 	
-	protected float rescale(float x, float min, float max) {
-		x -= min;
-		x *= (RANGE_MAX - RANGE_MIN) / (max - min);
+	protected float rescale(float x) {
+		x -= minValue;
+		x *= (RANGE_MAX - RANGE_MIN) / (maxValue - minValue);
 		x += RANGE_MIN;
 		x = x < RANGE_MIN ? RANGE_MIN : x;
 		x = x > RANGE_MAX ? RANGE_MAX : x;
