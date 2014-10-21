@@ -102,6 +102,26 @@ public class RingBufferTest {
 			assertEquals(0, actual.z, 0.0000001);
 		}
 	}
+	
+	@Test
+	public void testGetLastPoseSize1() {
+		ringBuffer.push(poseA());
+		Joint actual = ringBuffer.getJointMovement(JointType.HAND_LEFT, 1).iterator().next();
+		assertEquals(1, actual.x, 0.0000001);
+		assertEquals(2, actual.y, 0.0000001);
+		assertEquals(3, actual.z, 0.0000001);
+	}
+	
+	@Test
+	public void testGetLastPoseFullBuffer() {
+		ringBuffer.push(blankMovement());
+		ringBuffer.push(blankMovement());
+		ringBuffer.push(poseA());
+		Joint actual = ringBuffer.getJointMovement(JointType.HAND_LEFT, 1).iterator().next();
+		assertEquals(1, actual.x, 0.0000001);
+		assertEquals(2, actual.y, 0.0000001);
+		assertEquals(3, actual.z, 0.0000001);
+	}
 
 	//-----------------------//
 	//---Auxiliary-Methods---//

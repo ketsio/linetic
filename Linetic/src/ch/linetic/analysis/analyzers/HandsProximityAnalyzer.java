@@ -23,8 +23,9 @@ public class HandsProximityAnalyzer extends Analyzer {
 		}
 		
 		float accumulator = 0;
-		Iterator<Joint> leftH = movement.getJointMovement(JointType.HAND_LEFT).iterator();
-		Iterator<Joint> rightH = movement.getJointMovement(JointType.HAND_RIGHT).iterator();
+		
+		Iterator<Joint> leftH = movement.getJointMovement(JointType.HAND_LEFT, 5).iterator();
+		Iterator<Joint> rightH = movement.getJointMovement(JointType.HAND_RIGHT, 5).iterator();
 		
 		while(leftH.hasNext() && rightH.hasNext()) {
 			accumulator += leftH.next().dist(rightH.next());

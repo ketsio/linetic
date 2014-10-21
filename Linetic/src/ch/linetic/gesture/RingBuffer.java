@@ -33,12 +33,35 @@ public final class RingBuffer implements MovementInterface {
 
 	@Override
 	public Collection<Collection<Joint>> getMovements() {
+		return getMovements(size);
+	}
+
+	@Override
+	public Collection<Joint> getJointMovement(JointType jointType, int sizeFromEnd) {
+		sizeFromEnd = sizeFromEnd > size ? size : sizeFromEnd;
+		sizeFromEnd = sizeFromEnd < 0 ? 0 : sizeFromEnd;
+		
+		Collection<Joint> joints = new LinkedList<>();
+		PoseInterface pose;
+		int poseIndex;
+		
+		for (int i = 0; i < sizeFromEnd; i++) {
+			poseIndex = (inputPointer - sizeFromEnd + i + MAX_NBR_POSES) % MAX_NBR_POSES;
+			pose = buffer[poseIndex];
+			joints.add(pose.getJoint(jointType));
+		}
+		return joints;
+	}
+
+	@Override
+	public Collection<Collection<Joint>> getMovements(int sizeFromEnd) {
 		Collection<Collection<Joint>> list = new LinkedList<>();
 		for (JointType jointType : JointType.values()) {
-			list.add(getJointMovement(jointType));
+			list.add(getJointMovement(jointType, sizeFromEnd));
 		}
 		return list;
 	}
+
 
 	@Override
 	public void push(PoseInterface pose) {
