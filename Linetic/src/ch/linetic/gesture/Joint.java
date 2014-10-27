@@ -33,6 +33,13 @@ public class Joint {
 				this.z + that.z);
 	}
 
+	public Joint sub(Joint that) {
+		return new Joint(
+				this.x - that.x,
+				this.y - that.y,
+				this.z - that.z);
+	}
+
 	public float dist(Joint that) {
 		float accumulator = 0;
 		accumulator += (this.x - that.x) * (this.x - that.x);
@@ -54,6 +61,11 @@ public class Joint {
 		cosTheta = cosTheta < -1.0 ? -1 : cosTheta;
 		
 		return (float) (Math.acos(cosTheta) * 180.0 / Math.PI);
+	}
+	
+	@Override
+	public String toString() {
+		return "Joint("+x+", "+y+", "+z+")";
 	}
 
 }

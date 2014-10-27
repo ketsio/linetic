@@ -9,8 +9,8 @@ import ch.linetic.gesture.PoseInterface.JointType;
 
 public class HandsProximityAnalyzer extends Analyzer {
 
-	public final static float MIN_VALUE = 200;
-	public final static float MAX_VALUE = 0;
+	public final static float MIN_VALUE = 300;
+	public final static float MAX_VALUE = 30;
 	public final static int NBR_LAST_POSES = 5;
 
 	public HandsProximityAnalyzer(int index) {

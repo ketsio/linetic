@@ -10,7 +10,7 @@ import ch.linetic.gesture.PoseInterface.JointType;
 public final class ShakinessAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
-	public final static float MAX_VALUE = 1; // TODO PK ? (180)
+	public final static float MAX_VALUE = 40;
 
 	public ShakinessAnalyzer(int index) {
 		super(index, MIN_VALUE, MAX_VALUE);
@@ -28,6 +28,16 @@ public final class ShakinessAnalyzer extends Analyzer {
 		}
 		accumulator /= JointType.values().length;
 		return accumulator;
+	}
+	
+	@Override
+	protected double adjustMinValue() {
+		double newMinValue;
+		// The minimum is calculated with the mean
+		newMinValue = stats.getMean();
+		newMinValue = Math.max(newMinValue, minBoundary);
+		newMinValue -= Math.abs(newMinValue - minBoundary) / 2.0;
+		return newMinValue;
 	}
 	
 	@Override
