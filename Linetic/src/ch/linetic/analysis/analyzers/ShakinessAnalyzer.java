@@ -49,4 +49,14 @@ public final class ShakinessAnalyzer extends Analyzer {
 	public String name() {
 		return "Shakiness";
 	}
+
+	@Override
+	public String getSlug() {
+		return "shakiness";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue >= 0;
+	}
 }

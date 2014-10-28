@@ -39,4 +39,14 @@ public class HandsProximityAnalyzer extends Analyzer {
 	public String name() {
 		return "Hands Proximity";
 	}
+
+	@Override
+	public String getSlug() {
+		return "hands_proximity";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue >= 0;
+	}
 }

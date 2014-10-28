@@ -1,20 +1,23 @@
 package ch.linetic.analysis;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
+import processing.core.PApplet;
+import ch.linetic.connexion.Server;
 import ch.linetic.user.User;
 import ch.linetic.user.UserInterface;
 
 public class AnalyzerManagerTest {
 
 	AnalyzerManagerInterface am;
+	static Server server = new Server(new PApplet());
 	
 	@Before
 	public void init() {
-		am = new AnalyzerManager();
+		am = new AnalyzerManager(server);
 	}
 
 	@Test(expected=UserNotFoundException.class)

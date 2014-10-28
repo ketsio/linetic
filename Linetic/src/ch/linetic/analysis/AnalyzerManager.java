@@ -4,16 +4,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import ch.linetic.connexion.Server;
 import ch.linetic.user.UserInterface;
 
 public class AnalyzerManager implements AnalyzerManagerInterface {
 	
 	private Collection<AnalyzerInterface> analyzers;
 	private Map<Integer, Map<AnalyzerInterface, Float>> results;
+	private Server server;
 	
-	public AnalyzerManager() {
-		analyzers = Analyzer.ALL;
-		results = new HashMap<>();
+	public AnalyzerManager(Server server) {
+		this.analyzers = Analyzer.ALL;
+		this.results = new HashMap<>();
+		this.server = server;
 	}
 
 	@Override
@@ -22,10 +25,15 @@ public class AnalyzerManager implements AnalyzerManagerInterface {
 		Float value;
 		
 		for (AnalyzerInterface analyzer : analyzers) {
+			// Compute the analysis
 			value = analyzer.analyze(user.getMovement());
+			
+			// Store the result
 			userResults.put(analyzer, value);
+			
+			// Send the result
+			trigger(analyzer, value);
 		}
-		
 		results.put(user.getId(), userResults);
 	}
 
@@ -44,6 +52,12 @@ public class AnalyzerManager implements AnalyzerManagerInterface {
 			throw new UserNotFoundException();
 		
 		return results.get(user.getId());
+	}
+	
+	private void trigger(AnalyzerInterface analyzer, float value) {
+		if (analyzer.doTrigger(value)) {
+			server.send(analyzer.getSlug(), value);
+		}
 	}
 
 }

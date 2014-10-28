@@ -82,4 +82,14 @@ public final class ClapAnalyzer extends Analyzer {
 		return "Clap";
 	}
 
+	@Override
+	public String getSlug() {
+		return "clap";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue == 100;
+	}
+
 }

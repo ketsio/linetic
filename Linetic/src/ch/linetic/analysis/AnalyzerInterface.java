@@ -26,4 +26,16 @@ public interface AnalyzerInterface {
 	 * @return the name of the analyzer
 	 */
 	public String name();
+
+	/**
+	 * Getter
+	 * @return
+	 */
+	public String getSlug();
+
+	/**
+	 * Getter
+	 * @return
+	 */
+	public boolean doTrigger(float finalValue);
 }

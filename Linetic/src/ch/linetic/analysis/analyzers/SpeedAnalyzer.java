@@ -39,4 +39,14 @@ public final class SpeedAnalyzer extends Analyzer {
 	public String name() {
 		return "Speed";
 	}
+
+	@Override
+	public String getSlug() {
+		return "speed";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue >= 0;
+	}
 }

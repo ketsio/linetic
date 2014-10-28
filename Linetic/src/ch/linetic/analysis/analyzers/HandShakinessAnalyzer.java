@@ -54,4 +54,14 @@ public class HandShakinessAnalyzer extends Analyzer {
 	public String name() {
 		return "Hand Shakiness";
 	}
+
+	@Override
+	public String getSlug() {
+		return "hand_shakiness";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue >= 0;
+	}
 }

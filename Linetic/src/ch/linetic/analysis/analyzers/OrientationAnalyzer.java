@@ -43,4 +43,14 @@ public final class OrientationAnalyzer extends Analyzer {
 		return "Orientation";
 	}
 
+	@Override
+	public String getSlug() {
+		return "orientation";
+	}
+
+	@Override
+	public boolean doTrigger(float finalValue) {
+		return finalValue >= 0;
+	}
+
 }
