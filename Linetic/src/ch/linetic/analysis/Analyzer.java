@@ -31,7 +31,7 @@ public abstract class Analyzer implements AnalyzerInterface {
 	public final static AnalyzerInterface SHAKINESS = new ShakinessAnalyzer(1);
 	public final static AnalyzerInterface HAND_SHAKINESS = new HandShakinessAnalyzer(2);
 	public final static AnalyzerInterface HANDS_PROXIMITY = new HandsProximityAnalyzer(3);
-	public final static AnalyzerInterface REVERSE = new ReverseAnalyzer(4);
+	public final static AnalyzerInterface REVERSE = new OrientationAnalyzer(4);
 	public final static AnalyzerInterface CLAP = new ClapAnalyzer(5);
 
 	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED,

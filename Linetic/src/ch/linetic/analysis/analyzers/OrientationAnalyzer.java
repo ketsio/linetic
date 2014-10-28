@@ -7,13 +7,13 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
-public final class ReverseAnalyzer extends Analyzer {
+public final class OrientationAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
 	public final static float MAX_VALUE = 90;
 	private static final int NBR_LAST_POSES = 5;
 
-	public ReverseAnalyzer(int index) {
+	public OrientationAnalyzer(int index) {
 		super(index, MIN_VALUE, MAX_VALUE, false);
 	}
 
@@ -40,7 +40,7 @@ public final class ReverseAnalyzer extends Analyzer {
 
 	@Override
 	public String name() {
-		return "Reverse";
+		return "Orientation";
 	}
 
 }
