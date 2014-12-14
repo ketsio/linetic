@@ -33,9 +33,10 @@ public abstract class Analyzer implements AnalyzerInterface {
 	public final static AnalyzerInterface HANDS_PROXIMITY = new HandsProximityAnalyzer(3);
 	public final static AnalyzerInterface REVERSE = new OrientationAnalyzer(4);
 	public final static AnalyzerInterface CLAP = new ClapAnalyzer(5);
+	public final static AnalyzerInterface UNICITY = new UnicityAnalyzer(6);
 
 	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED,
-			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, CLAP);
+			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, UNICITY);
 
 	// -------------//
 	// -------------//
@@ -146,6 +147,10 @@ public abstract class Analyzer implements AnalyzerInterface {
 	}
 
 	protected float operationPerFrameAVG(Collection<Joint> joints) {
+		return operationPerFrameSUM(joints) / (joints.size() - 1);
+	}
+	
+	protected float operationPerFrameSUM(Collection<Joint> joints) {
 		assert joints.size() > 1 : "Must have at least two joints to average";
 
 		float accumulator = 0;
@@ -157,6 +162,6 @@ public abstract class Analyzer implements AnalyzerInterface {
 			}
 			previousJoint = joint;
 		}
-		return accumulator / (joints.size() - 1);
+		return accumulator;
 	}
 }

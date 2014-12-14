@@ -38,13 +38,13 @@ public class User implements UserInterface {
 
 	@Override
 	public void hello() {
-		System.out.println(">> Hello user number #" + id);
+		System.out.println(">> Hello " + getName());
 		
 	}
 
 	@Override
 	public void bye() {
-		System.out.println(">> Bye user number #" + id);
+		System.out.println(">> Bye " + getName());
 	}
 
 }

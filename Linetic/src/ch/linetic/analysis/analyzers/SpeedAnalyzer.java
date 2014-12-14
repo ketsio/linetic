@@ -10,7 +10,8 @@ import ch.linetic.gesture.PoseInterface.JointType;
 public final class SpeedAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
-	public final static float MAX_VALUE = 60;
+	public final static float MAX_VALUE = 30;
+	public final static int NBR_LAST_POSES = 10;
 
 	public SpeedAnalyzer(int index) {
 		super(index, MIN_VALUE, MAX_VALUE);
@@ -23,7 +24,7 @@ public final class SpeedAnalyzer extends Analyzer {
 		}
 		
 		float accumulator = 0;
-		for (Collection<Joint> joints : movement.getMovements()) {
+		for (Collection<Joint> joints : movement.getMovements(NBR_LAST_POSES)) {
 			accumulator += operationPerFrameAVG(joints);
 		}
 		accumulator /= JointType.values().length;

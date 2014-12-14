@@ -140,8 +140,6 @@ public class Linetic extends PApplet implements KinectListener {
 	public void onNewUser(SimpleOpenNI kinect, int userId) {
 		UserInterface user = users.push(userId);
 		kinect.startTrackingSkeleton(userId);
-		System.out.println("isTrackingSkeleton(" + userId + ") = "
-				+ kinect.isTrackingSkeleton(userId));
 		user.hello();
 	}
 

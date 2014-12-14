@@ -11,7 +11,13 @@ public interface PoseInterface {
 		ELBOW_RIGHT(5),
 		HAND_LEFT(6),
 		HAND_RIGHT(7),
-		TORSO(8);
+		TORSO(8),
+		HIP_LEFT(9),
+		HIP_RIGHT(10),
+		KNEE_LEFT(11),
+		KNEE_RIGHT(12),
+		FOOT_LEFT(13),
+		FOOT_RIGHT(14);
 		
 		int index = 0;
 		

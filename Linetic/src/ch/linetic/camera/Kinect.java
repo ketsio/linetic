@@ -67,6 +67,12 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightElbow3D = new PVector();
 	    PVector jointRightHand3D = new PVector();
 	    PVector jointTorso3D = new PVector();
+	    PVector jointLeftHip3D = new PVector();
+	    PVector jointRightHip3D = new PVector();
+	    PVector jointLeftKnee3D = new PVector();
+	    PVector jointRightKnee3D = new PVector();
+	    PVector jointLeftFoot3D = new PVector();
+	    PVector jointRightFoot3D = new PVector();
 
 	    PVector jointHead2D = new PVector();  
 	    PVector jointNeck2D = new PVector();  
@@ -77,6 +83,12 @@ public class Kinect implements CameraInterface {
 	    PVector jointRightElbow2D = new PVector();
 	    PVector jointRightHand2D = new PVector();
 	    PVector jointTorso2D = new PVector();
+	    PVector jointLeftHip2D = new PVector();
+	    PVector jointRightHip2D = new PVector();
+	    PVector jointLeftKnee2D = new PVector();
+	    PVector jointRightKnee2D = new PVector();
+	    PVector jointLeftFoot2D = new PVector();
+	    PVector jointRightFoot2D = new PVector();
 
 	    // Get the joint positions
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_HEAD, jointHead3D);  
@@ -88,6 +100,12 @@ public class Kinect implements CameraInterface {
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_HAND, jointLeftHand3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_HAND, jointRightHand3D);
 	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_TORSO, jointTorso3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_HIP, jointLeftHip3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_HIP, jointRightHip3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_KNEE, jointLeftKnee3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_KNEE, jointRightKnee3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_LEFT_FOOT, jointLeftFoot3D);
+	    kinect.getJointPositionSkeleton(user.getId(), SimpleOpenNI.SKEL_RIGHT_FOOT, jointRightFoot3D);
 
 	    kinect.convertRealWorldToProjective(jointHead3D, jointHead2D);
 	    kinect.convertRealWorldToProjective(jointNeck3D, jointNeck2D);
@@ -98,6 +116,12 @@ public class Kinect implements CameraInterface {
 	    kinect.convertRealWorldToProjective(jointRightElbow3D, jointRightElbow2D);
 	    kinect.convertRealWorldToProjective(jointRightHand3D, jointRightHand2D);
 	    kinect.convertRealWorldToProjective(jointTorso3D, jointTorso2D);
+	    kinect.convertRealWorldToProjective(jointLeftHip3D, jointLeftHip2D);
+	    kinect.convertRealWorldToProjective(jointRightHip3D, jointRightHip2D);
+	    kinect.convertRealWorldToProjective(jointLeftKnee3D, jointLeftKnee2D);
+	    kinect.convertRealWorldToProjective(jointRightKnee3D, jointRightKnee2D);
+	    kinect.convertRealWorldToProjective(jointLeftFoot3D, jointLeftFoot2D);
+	    kinect.convertRealWorldToProjective(jointRightFoot3D, jointRightFoot2D);
 
 	    // Set the new pose with those joints  
 	    pose.setJoint(JointType.NECK, new Joint(jointNeck3D));
@@ -108,6 +132,12 @@ public class Kinect implements CameraInterface {
 	    pose.setJoint(JointType.HAND_LEFT, new Joint(jointLeftHand3D));
 	    pose.setJoint(JointType.HAND_RIGHT, new Joint(jointRightHand3D));
 	    pose.setJoint(JointType.TORSO, new Joint(jointTorso3D));
+	    pose.setJoint(JointType.HIP_LEFT, new Joint(jointLeftHip3D));
+	    pose.setJoint(JointType.HIP_RIGHT, new Joint(jointRightHip3D));
+	    pose.setJoint(JointType.KNEE_LEFT, new Joint(jointLeftKnee3D));
+	    pose.setJoint(JointType.KNEE_RIGHT, new Joint(jointRightKnee3D));
+	    pose.setJoint(JointType.FOOT_LEFT, new Joint(jointLeftFoot3D));
+	    pose.setJoint(JointType.FOOT_RIGHT, new Joint(jointRightFoot3D));
 
 	    // Draw
 	    pg.beginDraw();
@@ -122,6 +152,12 @@ public class Kinect implements CameraInterface {
 	    drawLine(jointRightShoulder2D, jointRightElbow2D);
 	    drawLine(jointRightElbow2D, jointRightHand2D);
 	    drawLine(jointNeck2D, jointTorso2D);
+	    
+	    drawLine(jointLeftHip2D, jointRightHip2D);
+	    drawLine(jointLeftHip2D, jointLeftKnee2D);
+	    drawLine(jointLeftKnee2D, jointLeftFoot2D);
+	    drawLine(jointRightHip2D, jointRightKnee2D);
+	    drawLine(jointRightKnee2D, jointRightFoot2D);
 	    
 	    pg.endDraw();
 
