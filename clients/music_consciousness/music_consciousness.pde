@@ -30,7 +30,7 @@ void fileSelected(File selection) {
   GranularSamplePlayer player = new GranularSamplePlayer(ac, sample);
   
   // Loop the sample at its end points
-  player.setLoopType(SamplePlayer.LoopType.LOOP_ALTERNATING);
+  player.setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
   player.getLoopStartEnvelope().setValue(0);
   player.getLoopEndEnvelope().setValue((float)sample.getLength());
   

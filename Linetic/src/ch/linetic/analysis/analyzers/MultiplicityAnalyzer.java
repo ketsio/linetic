@@ -9,13 +9,13 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
-public final class UnicityAnalyzer extends Analyzer {
+public final class MultiplicityAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 5;
-	public final static float MAX_VALUE = 35;
+	public final static float MAX_VALUE = 25;
 	public final static int NBR_LAST_POSES = 15;
 
-	public UnicityAnalyzer(int index) {
+	public MultiplicityAnalyzer(int index) {
 		super(index, MIN_VALUE, MAX_VALUE);
 	}
 

@@ -33,10 +33,10 @@ public abstract class Analyzer implements AnalyzerInterface {
 	public final static AnalyzerInterface HANDS_PROXIMITY = new HandsProximityAnalyzer(3);
 	public final static AnalyzerInterface REVERSE = new OrientationAnalyzer(4);
 	public final static AnalyzerInterface CLAP = new ClapAnalyzer(5);
-	public final static AnalyzerInterface UNICITY = new UnicityAnalyzer(6);
+	public final static AnalyzerInterface MULTIPLICITY = new MultiplicityAnalyzer(6);
 
 	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED,
-			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, UNICITY);
+			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, MULTIPLICITY);
 
 	// -------------//
 	// -------------//
