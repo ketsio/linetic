@@ -14,6 +14,7 @@ boolean playing = false;
 void setup() {
   size(300,300);
   client = new Client(this);
+  client.login();
   ac = new AudioContext();
   grainIntervalEnvelope = new Envelope(ac, 30);
   rateEnvelope = new Envelope(ac, 1);
