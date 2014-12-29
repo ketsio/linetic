@@ -23,6 +23,12 @@ import controlP5.ControlEvent;
 import controlP5.ControlP5;
 
 @SuppressWarnings("serial")
+/**
+ * The class that starts the project.
+ * The main method simply start the Processing applet as describe in there documentation
+ * @author ketsio
+ *
+ */
 public class Linetic extends PApplet implements KinectListener {
 
 	private static final int WIDTH = 1200;
@@ -42,7 +48,7 @@ public class Linetic extends PApplet implements KinectListener {
 	public Server server;
 
 	public static void main(String args[]) {
-		PApplet.main(new String[] { "--present", "LineticSender" });
+		PApplet.main(new String[] { "--present", "Linetic" });
 	}
 
 	public void setup() {

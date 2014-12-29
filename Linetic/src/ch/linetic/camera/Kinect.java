@@ -11,12 +11,25 @@ import ch.linetic.gesture.PoseInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 import ch.linetic.user.UserInterface;
 
+/**
+ * Implementation of the CameraInterface using the Kinect by Microsoft
+ * @author ketsio
+ *
+ */
 public class Kinect implements CameraInterface {
 	
 	SimpleOpenNI kinect;
 	PApplet parrent;
 	PGraphics pg;
 	
+	/**
+	 * Return the next kinect camera available
+	 * If there is only one kinect connected, it returns that kinect the first time we call that function
+	 * but throws a NoCameraConnectedException if we call it again
+	 * @param parrent the PApplet class used in the project
+	 * @return the next kinect available as a CameraInterface
+	 * @throws NoCameraConnectedException if no other camera are connected
+	 */
 	public static CameraInterface getNextKinect(PApplet parrent) throws NoCameraConnectedException {
 
 		SimpleOpenNI k = new SimpleOpenNI(parrent, SimpleOpenNI.RUN_MODE_MULTI_THREADED);

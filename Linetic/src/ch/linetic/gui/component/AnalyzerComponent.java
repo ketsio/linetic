@@ -4,6 +4,11 @@ import ch.linetic.analysis.AnalyzerInterface;
 import ch.linetic.gui.Color;
 import processing.core.PApplet;
 
+/**
+ * Component of the GUI that display the result of an Analyzer
+ * @author ketsio
+ *
+ */
 public class AnalyzerComponent extends Component {
 
 	private final static int MAX_WIDTH = 2000;

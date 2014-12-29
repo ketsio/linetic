@@ -7,6 +7,11 @@ import java.util.Map;
 import ch.linetic.connexion.Server;
 import ch.linetic.user.UserInterface;
 
+/**
+ * Implementation of the AnalyzerManagerInterface
+ * @author ketsio
+ *
+ */
 public class AnalyzerManager implements AnalyzerManagerInterface {
 	
 	private Collection<AnalyzerInterface> analyzers;

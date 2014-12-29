@@ -1,5 +1,10 @@
 package ch.linetic.analysis;
 
+/**
+ * Helper class that enables you to do quick statistics progressively.
+ * @author ketsio
+ *
+ */
 public class Statistics {
 
 	private long numSamples = 0;
@@ -7,6 +12,11 @@ public class Statistics {
 	private double sampleMean = 0;
 	private double sampleVar = 0;
 
+	/**
+	 * Add a point of data to the statistic
+	 * It automatically updates all the statistics available inside the class
+	 * @param x the data to be added
+	 */
 	public void addData(double x) {
 		// Increment number of samples obtained.
 		numSamples++;
@@ -30,31 +40,56 @@ public class Statistics {
 		}
 	}
 	
+	/**
+	 * Getter
+	 * @return the number of samples of the statistic
+	 */
 	public long getSize() {
 		return numSamples;
 	}
 
+	/**
+	 * Getter
+	 * @return the mean of the statistic
+	 */
 	public double getMean() {
 		return sampleMean;
 	}
 
+	/**
+	 * Getter
+	 * @return the variance of the statistic
+	 */
 	public double getVariance() {
 		return sampleVar;
 	}
 
+	/**
+	 * Getter
+	 * @return the confidence interval of the statistic
+	 */
 	public double getConfidenceHalfInterval() {
 		// mean +- this value, i.e., this is half the interval.
 		return 1.96 * Math.sqrt(sampleVar);
 	}
 	
+	/**
+	 * Getter
+	 * @return the minimum point of the confidence interval
+	 */
 	public double getMinOfConfidenceInterval() {
 		return getMean() - getConfidenceHalfInterval();
 	}
 	
+	/**
+	 * Getter
+	 * @return the maximum point of the confidence interval
+	 */
 	public double getMaxOfConfidenceInterval() {
 		return getMean() + getConfidenceHalfInterval();
 	}
 
+	@Override
 	public String toString() {
 		if (numSamples == 0)
 			return "No samples";

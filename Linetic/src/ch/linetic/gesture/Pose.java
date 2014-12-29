@@ -2,10 +2,18 @@ package ch.linetic.gesture;
 
 import processing.core.PVector;
 
+/**
+ * Implementation of the PoseInterface
+ * @author ketsio
+ *
+ */
 public class Pose implements PoseInterface {
 	
 	private final Joint[] joints;
 	
+	/**
+	 * By default, all the joints of the pose have zero for their 3 coordinates
+	 */
 	public Pose() {
 		this.joints = new Joint[JointType.values().length];
 		for (int i = 0; i < joints.length; i++) {

@@ -7,6 +7,13 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the hand gesture "clap"
+ * Analyze by steps, when we reach the last state (i.e. 100%), 
+ * it means that the clap has been recognize
+ * @author ketsio
+ *
+ */
 public final class ClapAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;

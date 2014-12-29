@@ -7,6 +7,13 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the orientation of the body
+ * 0% means that the person is facing the kinect
+ * 100 means that the person is oriented 90 degrees on the right or on the left
+ * @author ketsio
+ *
+ */
 public final class OrientationAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;

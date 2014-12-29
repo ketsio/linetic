@@ -5,6 +5,11 @@ import java.util.LinkedList;
 
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Implementation of the MovementInterface
+ * @author ketsio
+ *
+ */
 public final class RingBuffer implements MovementInterface {
 	
 	private PoseInterface[] buffer;

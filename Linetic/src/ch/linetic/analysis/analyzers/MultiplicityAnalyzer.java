@@ -9,6 +9,14 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the multiplicity of the movement
+ * i.e. The more part of your body you move the bigger the result will be
+ * You can keep this analyzer close to 0% if you move step by step, member by member
+ * without being brutal in your moves
+ * @author ketsio
+ *
+ */
 public final class MultiplicityAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 5;

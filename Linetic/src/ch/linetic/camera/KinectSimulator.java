@@ -11,6 +11,11 @@ import ch.linetic.gesture.PoseInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 import ch.linetic.user.UserInterface;
 
+/**
+ * Implementation of the CameraInterface by simulating a kinect
+ * @author ketsio
+ *
+ */
 public class KinectSimulator implements CameraInterface {
 
 	private static final Random rand = new Random();

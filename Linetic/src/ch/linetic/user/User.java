@@ -10,6 +10,10 @@ public class User implements UserInterface {
 	private final int id;
 	private final int color;
 	
+	/**
+	 * Create a user given an identifier
+	 * @param id the identifier
+	 */
 	public User(int id) {
 		this.movement = new RingBuffer();
 		this.id = id;

@@ -15,32 +15,61 @@ public class UserMap extends Observable implements Iterable<UserInterface> {
 	private static Random r = new Random();
 	
 	private Map<Integer, UserInterface> users;
+	
+	/**
+	 * The highlightedUser is the user that is analyzed by the different Analyzers
+	 */
 	public UserInterface highlightedUser = null;
 	
 	public UserMap() {
 		this.users = new HashMap<Integer, UserInterface>();
 	}
 	
+	/**
+	 * Return a User given its identifier
+	 * @param userId the identifier of the user
+	 * @return the user
+	 */
 	public UserInterface get(int userId) {
 		return users.get(userId);
 	}
 	
+	/**
+	 * @return all the Users as a Collection
+	 */
 	public Collection<UserInterface> values() {
 		return users.values();
 	}
 	
+	/**
+	 * @return the number of users
+	 */
 	public int size() {
 		return users.values().size();
 	}
 	
+	/**
+	 * Check if the user with identifier `key` exists
+	 * @param key the user id
+	 * @return true if the user exists, false otherwise
+	 */
 	public boolean containsKey(Integer key) {
 		return users.keySet().contains(key);
 	}
-	
+
+	/**
+	 * Check if the user `user` exists
+	 * @param user
+	 * @return true if the user exists, false otherwise
+	 */
 	public boolean containsValue(UserInterface user) {
 		return users.values().contains(user);
 	}
 	
+	/**
+	 * Change the current highlightedUser to a given user
+	 * @param user the new highlightedUser
+	 */
 	public void setHighlightedUser(UserInterface user) {
 		highlightedUser = user;
 		System.out.println(user.getName() + " is the new hightligtedUser");
@@ -48,6 +77,12 @@ public class UserMap extends Observable implements Iterable<UserInterface> {
 		notifyObservers();
 	}
 	
+	/**
+	 * Add a User to the map given its identifier only
+	 * The User itself will be created here
+	 * @param userId the user identifier
+	 * @return the user that has been created
+	 */
 	public UserInterface push(int userId) {
 
 		if (users.size() >= MAX_NBR_USERS) {
@@ -66,6 +101,11 @@ public class UserMap extends Observable implements Iterable<UserInterface> {
 		return user;
 	}
 
+	/**
+	 * Remove a User to the map given its identifier
+	 * @param userId the user identifier
+	 * @return the user that has been removed
+	 */
 	public UserInterface pop(int userId) {
 
 		UserInterface user = users.get(userId);

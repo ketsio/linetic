@@ -6,6 +6,11 @@ import oscP5.OscMessage;
 import oscP5.OscP5;
 import processing.core.PApplet;
 
+/**
+ * The Server class is that part of the project which enables the server-clients connection
+ * @author ketsio
+ *
+ */
 public final class Server {
 	private final OscP5 oscP5;
 	private final NetAddressList netAddressList = new NetAddressList();
@@ -20,6 +25,11 @@ public final class Server {
 		oscP5 = new OscP5(parrent, listeningPort);
 	}
 
+	/**
+	 * Send the result of the analysis of an Analyzer to the clients that are connected
+	 * @param analyzer the slug of the Analyzer
+	 * @param result the result of the analysis
+	 */
 	public void send(String analyzer, float result) {
 		OscMessage m = new OscMessage("/analysis");
 		m.add(analyzer);
@@ -27,6 +37,11 @@ public final class Server {
 		oscP5.send(m, netAddressList);
 	}
 
+	/**
+	 * Read the message from the clients
+	 * Used for connecting and disconnecting clients
+	 * @param m the OSC message received
+	 */
 	public void read(OscMessage m) {
 		if (m.addrPattern().equals(connectPattern))
 			connect(m.netAddress().address());

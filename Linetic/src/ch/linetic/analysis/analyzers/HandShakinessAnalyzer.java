@@ -8,6 +8,12 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the shakiness of the hands
+ * <code>MIN_VALUE</code> and <code>MAX_VALUE</code> can be adjust for different sensitivity
+ * @author ketsio
+ *
+ */
 public class HandShakinessAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;

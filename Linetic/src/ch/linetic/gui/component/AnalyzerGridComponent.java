@@ -9,11 +9,27 @@ import ch.linetic.gui.Color;
 import ch.linetic.user.UserMap;
 import processing.core.PApplet;
 
+/**
+ * Implementation of the class {@link GridComponent} used for displaying
+ * a grid of the result of all Analyzers present in a given AnalyzerManager
+ * @author ketsio
+ *
+ */
 public class AnalyzerGridComponent extends GridComponent {
 
 	private UserMap users;
 	private AnalyzerManagerInterface am;
 
+	/**
+	 * 
+	 * @param parrent the PApplet of the application
+	 * @param am the analyzer manager containing all the analyzers to display
+	 * @param users the map of users of the application
+	 * @param x the x coordinate of the position
+	 * @param y the y coordinate of the position
+	 * @param width the width of the component
+	 * @param height the height of the component
+	 */
 	public AnalyzerGridComponent(
 			PApplet parrent, 
 			AnalyzerManagerInterface am,

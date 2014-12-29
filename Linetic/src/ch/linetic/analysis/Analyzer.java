@@ -8,6 +8,17 @@ import ch.linetic.analysis.analyzers.*;
 import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 
+/**
+ * Abstract implementation of the AnalyzerInterface
+ * As all the analyzers has a lot in common, the abstract class is a helper class
+ * that all concrete analyzer should extends from.
+ * It defines useful function to rescale and adjust the result of the analyzers.
+ * 
+ * As this class redefines the function <code>analyze()</code> the behavior of each
+ * Analyzer belongs to the <code>compute()</code> method.
+ * @author ketsio
+ *
+ */
 public abstract class Analyzer implements AnalyzerInterface {
 
 	private static final long FRAMES_TO_WAIT_BEFORE_ADJUSTING = 20;
@@ -35,8 +46,11 @@ public abstract class Analyzer implements AnalyzerInterface {
 	public final static AnalyzerInterface CLAP = new ClapAnalyzer(5);
 	public final static AnalyzerInterface MULTIPLICITY = new MultiplicityAnalyzer(6);
 
+	/**
+	 * The list of All analyzers used in the project
+	 */
 	public final static List<AnalyzerInterface> ALL = Arrays.asList(SPEED,
-			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, MULTIPLICITY);
+			SHAKINESS, HAND_SHAKINESS, HANDS_PROXIMITY, REVERSE, MULTIPLICITY, CLAP);
 
 	// -------------//
 	// -------------//
@@ -68,12 +82,12 @@ public abstract class Analyzer implements AnalyzerInterface {
 	}
 
 	@Override
-	public float analyze(MovementInterface movement) {
+	public final float analyze(MovementInterface movement) {
 		return analyze(movement, true);
 	}
 
 	@Override
-	public float analyze(MovementInterface movement, boolean rescaled) {
+	public final float analyze(MovementInterface movement, boolean rescaled) {
 		if (movement.size() < 1) {
 			return 0;
 		}
@@ -85,13 +99,21 @@ public abstract class Analyzer implements AnalyzerInterface {
 		return rescaled ? rescale(rawValue) : rawValue;
 	}
 
+	/**
+	 * The method that encapsulates the behavior of the analyzer
+	 * @param movement the movement to be analyzed
+	 * @return the raw result (to be adjusted and rescaled if necessary)
+	 */
 	protected abstract float compute(MovementInterface movement);
 
 	// -------------//
 	// ---Getters---//
 	// -------------//
 
-	/** @return (int) : The index of the analyzer */
+	/** 
+	 * Getter
+	 * @return (int) : The index of the analyzer 
+	 */
 	public int index() {
 		return this.index;
 	}

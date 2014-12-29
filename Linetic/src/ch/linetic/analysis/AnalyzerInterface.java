@@ -2,6 +2,13 @@ package ch.linetic.analysis;
 
 import ch.linetic.gesture.MovementInterface;
 
+/**
+ * The analyzer is the building block of the project.
+ * Each analyzers analyzes the movement of the user in its own way.
+ * The behavior of the analyzer is located in the <code>analyze()</code> function.
+ * @author ketsio
+ *
+ */
 public interface AnalyzerInterface {
 
 	final static float RANGE_MIN = 0;
@@ -29,13 +36,15 @@ public interface AnalyzerInterface {
 
 	/**
 	 * Getter
-	 * @return
+	 * @return the unique slug of the analyzer (no two analyzers should have the same slug)
 	 */
 	public String getSlug();
 
 	/**
-	 * Getter
-	 * @return
+	 * Check if we can trigger the result to all the clients connected
+	 * given the result between <code>RANGE_MIN</code> and <code>RANGE_MAX</code>
+	 * @param finalValue the final result of the analyzer
+	 * @return true if we should trigger, false otherwise
 	 */
 	public boolean doTrigger(float finalValue);
 }

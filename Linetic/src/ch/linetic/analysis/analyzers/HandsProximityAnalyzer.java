@@ -7,6 +7,13 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the proximity of the hands
+ * <code>MIN_VALUE</code> and <code>MAX_VALUE</code> can be adjust to modify the zone
+ * where the hands are considered as close to each other
+ * @author ketsio
+ *
+ */
 public class HandsProximityAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 300;

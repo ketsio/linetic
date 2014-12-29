@@ -5,6 +5,17 @@ import java.util.Map;
 
 import ch.linetic.user.UserInterface;
 
+/**
+ * interface that manages the analyzers.
+ * All the analyzers that this interface manage must be given when instantiated or 
+ * accessible through a static variable. (e.g. <code>Analyzer.ALL</code>)
+ * 
+ * Manage the analyzers by computing all the result for a given user and
+ * returning the results as a Map.
+ * It should also manage sending the result to the connected clients.
+ * @author ketsio
+ *
+ */
 public interface AnalyzerManagerInterface {
 	
 	/**

@@ -7,10 +7,16 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the shakiness of the whole body
+ * <code>MIN_VALUE</code> and <code>MAX_VALUE</code> can be adjust for different sensitivity
+ * @author ketsio
+ *
+ */
 public final class ShakinessAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
-	public final static float MAX_VALUE = 40;
+	public final static float MAX_VALUE = 10;
 
 	public ShakinessAnalyzer(int index) {
 		super(index, MIN_VALUE, MAX_VALUE);

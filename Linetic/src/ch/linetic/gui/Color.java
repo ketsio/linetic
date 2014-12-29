@@ -2,6 +2,12 @@ package ch.linetic.gui;
 
 import processing.core.PApplet;
 
+/**
+ * Helper class storing the colors needed in the project.
+ * Contains the color chart of the project.
+ * @author ketsio
+ *
+ */
 public class Color {
 	
 	public static final PApplet parrent = new PApplet();

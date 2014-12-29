@@ -7,6 +7,14 @@ import ch.linetic.gesture.Joint;
 import ch.linetic.gesture.MovementInterface;
 import ch.linetic.gesture.PoseInterface.JointType;
 
+/**
+ * Analyze the speed of the movement
+ * i.e. analyze the average of the distance of all joints of the body
+ * and then average those values as well.
+ * <code>MIN_VALUE</code> and <code>MAX_VALUE</code> can be adjust for different sensitivity
+ * @author ketsio
+ *
+ */
 public final class SpeedAnalyzer extends Analyzer {
 
 	public final static float MIN_VALUE = 0;
