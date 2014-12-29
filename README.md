@@ -4,9 +4,9 @@ Gesture analysis for a prototype of music consciousness environments
 
 ###How to start
 
-For starting Linetic you need :
+For starting Linetic :
 
- - To add the following libraries available in [/Linetic/lib][Linetic Lib] :
+ - Add the following libraries available in [/Linetic/lib][Linetic Lib] :
 	 - oscP5 : for Server-Client communication
 	 - controlP5 : for GUI features
 	 - core : Processing library
