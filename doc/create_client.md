@@ -104,5 +104,5 @@ It plays the music of your choice (using the beads library - Make sure your impo
 The bigger the value of the Multiplicity Analyzer is, the bigger the deformation of the music will be. That way it forces the user to keep it multiplicity as low as possible and move step by step therefore being more aware of its own movements.
 
 [Empty Example]: /clients/empty_example
-[Client/Server Architecture]: /doc/client_server.md
+[Client/Server Architecture]: /doc/server_client.md
 [Music Consciousness]: /clients/music_consciousness
