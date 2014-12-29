@@ -4,7 +4,7 @@ import ch.linetic.gesture.MovementInterface;
 
 /**
  * The analyzer is the building block of the project.
- * Each analyzers analyzes the movement of the user in its own way.
+ * Each analyzer analyzes the movement of the user in its own way.
  * The behavior of the analyzer is located in the <code>analyze()</code> function.
  * @author ketsio
  *
