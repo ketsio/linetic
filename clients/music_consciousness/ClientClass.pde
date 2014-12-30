@@ -29,16 +29,15 @@ class Client {
   }
   
   public void handleAnalyzer(String name, float value) {
-    if(name.equals("speed")) {
-        //println("speed : " + value);
-    }
     if(name.equals("multiplicity")) {
         float multiplicityPercent = value / 100.0;
         float x = rateFunction(multiplicityPercent);
-        int y = grainFunction(multiplicityPercent);
+        float y = grainFunction(multiplicityPercent);
+        float z = pitchFunction(multiplicityPercent);
         
         rateEnvelope.addSegment(x, 1);
         grainIntervalEnvelope.addSegment(y, 1);
+        pitchEnvelope.addSegment(z, 1);
         println("multiplicity : " + multiplicityPercent);
     }
   }
