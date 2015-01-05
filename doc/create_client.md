@@ -99,7 +99,7 @@ Concrete example
 **For a concrete example, have a look at the client [music_consciousness][Music Consciousness].**
 It plays the music of your choice (using the beads library - Make sure your import this library before running this client) and uses the multiplicity analyzer to modify the rate and the grain of the song.
 
->**Multiplicity Analyzer**  : The more part of your body you move the bigger the result will be. You can keep this analyzer close to 0% if you move step by step, member by member without being brutal in your moves.
+>**Multiplicity Analyzer**  : The more parts of your body you move the bigger the result will be. You can keep this analyzer close to 0% if you move step by step, member by member without being brutal in your moves.
 
 The bigger the value of the Multiplicity Analyzer is, the bigger the deformation of the music will be. That way it forces the user to keep it multiplicity as low as possible and move step by step therefore being more aware of its own movements.
 
