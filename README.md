@@ -2,7 +2,7 @@ linetic
 =======
 Gesture analysis for a prototype of music consciousness environments
 
-###How to start
+### How to start
 
 For starting Linetic :
 
@@ -20,7 +20,7 @@ For starting a client :
  - Open the client in Processing (double click on a `.pde` file)
  - Run the client on Processing (Sketch > Run)
 
-###How it works
+### How it works
 
 **This project uses the Kinect for analyzing the movement using so called `Analyzer`s.**
 Each `Analyzer` analyzes the movement of the user in its own way. The behavior of the analyzer is located in a function that takes a `Movement` as a parameter and return a `float` as the result of the analysis.
